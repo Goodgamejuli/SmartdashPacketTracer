@@ -28,8 +28,55 @@ import ProtocolEdge from './ProtocolEdge';
 const nodeTypes = { smartDevice: SmartDeviceNode };
 const edgeTypes = { protocol: ProtocolEdge };
 
+// Drop-Zentrierung: grobe Node-Größe.
+// Falls dein SmartDeviceNode deutlich andere Maße hat: Werte anpassen.
+const NODE_W = 180;
+const NODE_H = 84;
+
+type ProtocolKey = Device['protocols'][number];
+
+type ProtocolOption = {
+  protocol: ProtocolKey;
+  disabled: boolean; // nur für "create" relevant
+  hint?: string; // rein informativ, nicht zum Deaktivieren im Edit-Modus
+};
+
+type ProtocolPickerMode = 'create' | 'edit';
+
+type ProtocolPickerState = {
+  mode: ProtocolPickerMode;
+
+  // create
+  params?: Connection;
+
+  // edit
+  edgeId?: string;
+
+  sourceDevice: Device;
+  targetDevice: Device;
+
+  edgeSnapshot?: {
+    source: string;
+    target: string;
+    protocol: ProtocolKey;
+    sourceHandle: string | null;
+    targetHandle: string | null;
+  };
+
+  options: ProtocolOption[];
+  selected: ProtocolKey;
+};
+
+type ContextMenuState =
+  | { kind: 'node'; id: string; x: number; y: number }
+  | { kind: 'edge'; id: string; x: number; y: number }
+  | null;
+
 const TopologyCanvasContent: React.FC = () => {
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const contextMenuRef = useRef<HTMLDivElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+
   const [rf, setRf] = useState<ReactFlowInstance | null>(null);
 
   const devices = useTopologyStore((s) => s.devices);
@@ -48,7 +95,307 @@ const TopologyCanvasContent: React.FC = () => {
   const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
   const [selectedEdgeIds, setSelectedEdgeIds] = useState<string[]>([]);
 
+  const [protocolPicker, setProtocolPicker] = useState<ProtocolPickerState | null>(null);
+  const lastProtocolByPairRef = useRef<Map<string, ProtocolKey>>(new Map());
+
+  const [contextMenu, setContextMenu] = useState<ContextMenuState>(null);
+
   const deviceDefByType = useMemo(() => new Map(ALL_DEVICE_TYPES.map((def) => [def.type, def])), []);
+
+  const safeAddLog = useCallback(
+    (text: string, level?: any) => {
+      // kompatibel zu addLog(text) und addLog(text, level)
+      (addLog as any)(text, level);
+    },
+    [addLog]
+  );
+
+  const pairKey = useCallback((a: string, b: string) => [a, b].sort().join('|'), []);
+  const closeContextMenu = useCallback(() => setContextMenu(null), []);
+  const closeProtocolPicker = useCallback(() => setProtocolPicker(null), []);
+
+  const getMenuPos = useCallback((clientX: number, clientY: number) => {
+    const rect = wrapperRef.current?.getBoundingClientRect();
+    if (!rect) return { x: clientX, y: clientY };
+    return {
+      x: clientX - rect.left + 12,
+      y: clientY - rect.top + 8,
+    };
+  }, []);
+
+  const sharedProtocolsOf = useCallback((a: Device, b: Device) => {
+    return a.protocols.filter((p) => b.protocols.includes(p)) as ProtocolKey[];
+  }, []);
+
+  const findExactDuplicateEdgeId = useCallback(
+    (args: {
+      source: string;
+      target: string;
+      protocol: ProtocolKey;
+      sourceHandle: string | null;
+      targetHandle: string | null;
+      ignoreId?: string;
+    }) => {
+      const { source, target, protocol, sourceHandle, targetHandle, ignoreId } = args;
+
+      const found = edgesInStore.find(
+        (e: any) =>
+          e.id !== ignoreId &&
+          e.source === source &&
+          e.target === target &&
+          e.protocol === protocol &&
+          (e.sourceHandle ?? null) === (sourceHandle ?? null) &&
+          (e.targetHandle ?? null) === (targetHandle ?? null)
+      );
+
+      return found?.id ?? null;
+    },
+    [edgesInStore]
+  );
+
+  const finalizeCreateConnection = useCallback(
+    (params: Connection, sourceDevice: Device, targetDevice: Device, protocol: ProtocolKey) => {
+      if (!params.source || !params.target) {
+        safeAddLog('Verbindung ohne Quelle oder Ziel wurde verworfen.', 'warn');
+        return;
+      }
+
+      const dupId = findExactDuplicateEdgeId({
+        source: params.source,
+        target: params.target,
+        protocol,
+        sourceHandle: (params.sourceHandle ?? null) as string | null,
+        targetHandle: (params.targetHandle ?? null) as string | null,
+      });
+
+      if (dupId) {
+        safeAddLog('Diese Verbindung existiert bereits.', 'warn');
+        return;
+      }
+
+      addEdgeToStore({
+        source: params.source,
+        target: params.target,
+        protocol,
+        sourceHandle: params.sourceHandle ?? null,
+        targetHandle: params.targetHandle ?? null,
+      } as any);
+
+      lastProtocolByPairRef.current.set(pairKey(params.source, params.target), protocol);
+
+      safeAddLog(
+        `Verbindung erstellt: ${sourceDevice.label} ⇄ ${targetDevice.label} über ${
+          PROTOCOL_META[protocol]?.label ?? protocol
+        }.`,
+        'success'
+      );
+    },
+    [addEdgeToStore, findExactDuplicateEdgeId, pairKey, safeAddLog]
+  );
+
+  const finalizeEditConnection = useCallback(
+    (state: ProtocolPickerState) => {
+      const snap = state.edgeSnapshot;
+      if (!snap || !state.edgeId) {
+        safeAddLog('Änderung verworfen. Edge-Daten fehlen.', 'error');
+        return;
+      }
+
+      const nextProtocol = state.selected;
+      const prevProtocol = snap.protocol;
+
+      if (nextProtocol === prevProtocol) {
+        safeAddLog('Protokoll blieb unverändert.', 'info');
+        return;
+      }
+
+      const otherId = findExactDuplicateEdgeId({
+        source: snap.source,
+        target: snap.target,
+        protocol: nextProtocol,
+        sourceHandle: snap.sourceHandle,
+        targetHandle: snap.targetHandle,
+        ignoreId: state.edgeId,
+      });
+
+      if (otherId) {
+        removeEdgeFromStore(state.edgeId);
+        safeAddLog('Protokoll existierte bereits. Doppelte Verbindung wurde entfernt.', 'success');
+        return;
+      }
+
+      removeEdgeFromStore(state.edgeId);
+      addEdgeToStore({
+        source: snap.source,
+        target: snap.target,
+        protocol: nextProtocol,
+        sourceHandle: snap.sourceHandle,
+        targetHandle: snap.targetHandle,
+      } as any);
+
+      safeAddLog(
+        `Protokoll geändert: ${state.sourceDevice.label} ⇄ ${state.targetDevice.label} von ${
+          PROTOCOL_META[prevProtocol]?.label ?? prevProtocol
+        } zu ${PROTOCOL_META[nextProtocol]?.label ?? nextProtocol}.`,
+        'success'
+      );
+    },
+    [addEdgeToStore, findExactDuplicateEdgeId, removeEdgeFromStore, safeAddLog]
+  );
+
+  const openProtocolPickerCreate = useCallback(
+    (params: Connection, sourceDevice: Device, targetDevice: Device, shared: ProtocolKey[]) => {
+      if (!params.source || !params.target) return;
+
+      const options: ProtocolOption[] = shared.map((protocol) => {
+        const dupId = findExactDuplicateEdgeId({
+          source: params.source!,
+          target: params.target!,
+          protocol,
+          sourceHandle: (params.sourceHandle ?? null) as string | null,
+          targetHandle: (params.targetHandle ?? null) as string | null,
+        });
+
+        return {
+          protocol,
+          disabled: Boolean(dupId),
+          hint: dupId ? 'Bereits verbunden' : undefined,
+        };
+      });
+
+      const enabled = options.filter((o) => !o.disabled).map((o) => o.protocol);
+
+      if (enabled.length === 0) {
+        safeAddLog(
+          `Alle möglichen Verbindungen zwischen ${sourceDevice.label} und ${targetDevice.label} existieren bereits.`,
+          'warn'
+        );
+        return;
+      }
+
+      if (enabled.length === 1) {
+        finalizeCreateConnection(params, sourceDevice, targetDevice, enabled[0]);
+        return;
+      }
+
+      const key = pairKey(params.source, params.target);
+      const preferred = lastProtocolByPairRef.current.get(key);
+      const selected = preferred && enabled.includes(preferred) ? preferred : enabled[0];
+
+      setProtocolPicker({
+        mode: 'create',
+        params,
+        sourceDevice,
+        targetDevice,
+        options,
+        selected,
+      });
+    },
+    [finalizeCreateConnection, findExactDuplicateEdgeId, pairKey, safeAddLog]
+  );
+
+  const openProtocolPickerEdit = useCallback(
+    (edgeId: string) => {
+      const edge = edgesInStore.find((e: any) => e.id === edgeId) as any;
+      if (!edge) {
+        safeAddLog('Verbindung konnte nicht gefunden werden.', 'error');
+        return;
+      }
+
+      const sourceDevice = devices.find((d) => d.id === edge.source);
+      const targetDevice = devices.find((d) => d.id === edge.target);
+      if (!sourceDevice || !targetDevice) {
+        safeAddLog('Geräte zu dieser Verbindung fehlen.', 'error');
+        return;
+      }
+
+      const shared = sharedProtocolsOf(sourceDevice, targetDevice);
+
+      if (sourceDevice.protocols.length < 2 || targetDevice.protocols.length < 2 || shared.length < 2) {
+        safeAddLog('Keine alternative Protokoll-Option verfügbar.', 'info');
+        return;
+      }
+
+      const sourceHandle = (edge.sourceHandle ?? null) as string | null;
+      const targetHandle = (edge.targetHandle ?? null) as string | null;
+
+      const options: ProtocolOption[] = shared.map((protocol) => {
+        const otherId = findExactDuplicateEdgeId({
+          source: edge.source,
+          target: edge.target,
+          protocol,
+          sourceHandle,
+          targetHandle,
+          ignoreId: edgeId,
+        });
+
+        return {
+          protocol,
+          disabled: false, // Edit: niemals blockieren
+          hint: otherId ? 'Existiert bereits. Wird beim Bestätigen zusammengeführt' : undefined,
+        };
+      });
+
+      const currentProtocol = edge.protocol as ProtocolKey;
+
+      closeContextMenu();
+
+      setProtocolPicker({
+        mode: 'edit',
+        edgeId,
+        sourceDevice,
+        targetDevice,
+        options,
+        selected: currentProtocol,
+        edgeSnapshot: {
+          source: edge.source,
+          target: edge.target,
+          protocol: currentProtocol,
+          sourceHandle,
+          targetHandle,
+        },
+      });
+    },
+    [closeContextMenu, devices, edgesInStore, findExactDuplicateEdgeId, safeAddLog, sharedProtocolsOf]
+  );
+
+  const confirmProtocolPicker = useCallback(() => {
+    if (!protocolPicker) return;
+
+    const selectedOpt = protocolPicker.options.find((o) => o.protocol === protocolPicker.selected);
+    if (!selectedOpt) {
+      safeAddLog('Auswahl ungültig.', 'warn');
+      return;
+    }
+
+    if (protocolPicker.mode === 'create' && selectedOpt.disabled) {
+      safeAddLog('Diese Verbindung existiert bereits.', 'warn');
+      return;
+    }
+
+    if (protocolPicker.mode === 'create') {
+      if (!protocolPicker.params) {
+        safeAddLog('Verbindung verworfen. Verbindungsdaten fehlen.', 'error');
+        return;
+      }
+      finalizeCreateConnection(
+        protocolPicker.params,
+        protocolPicker.sourceDevice,
+        protocolPicker.targetDevice,
+        protocolPicker.selected
+      );
+      closeProtocolPicker();
+      return;
+    }
+
+    finalizeEditConnection(protocolPicker);
+    closeProtocolPicker();
+  }, [closeProtocolPicker, finalizeCreateConnection, finalizeEditConnection, protocolPicker, safeAddLog]);
+
+  const cancelProtocolPicker = useCallback(() => {
+    closeProtocolPicker();
+    safeAddLog('Aktion abgebrochen.', 'warn');
+  }, [closeProtocolPicker, safeAddLog]);
 
   useEffect(() => {
     setNodes(
@@ -71,29 +418,24 @@ const TopologyCanvasContent: React.FC = () => {
 
   useEffect(() => {
     setEdges(
-      edgesInStore.map<FlowEdge>((edge) => ({
+      edgesInStore.map<FlowEdge>((edge: any) => ({
         id: edge.id,
         source: edge.source,
         target: edge.target,
 
-        // ✅ Handles aus gespeicherter Topologie
         sourceHandle: edge.sourceHandle ?? undefined,
         targetHandle: edge.targetHandle ?? undefined,
 
-        // ✅ custom edge (rendered von ProtocolEdge)
         type: 'protocol',
 
-        // ✅ KEINE Pfeile: markerEnd nicht setzen
-        // markerEnd: ...
-
         style: {
-          stroke: PROTOCOL_META[edge.protocol]?.color ?? '#4b5563',
+          stroke: PROTOCOL_META[edge.protocol as keyof typeof PROTOCOL_META]?.color ?? '#4b5563',
           strokeWidth: 2,
         },
 
         data: {
           protocol: edge.protocol,
-          flights: flightsByEdgeId[edge.id] ?? [],
+          flights: flightsByEdgeId?.[edge.id] ?? [],
         },
       }))
     );
@@ -101,8 +443,10 @@ const TopologyCanvasContent: React.FC = () => {
 
   const onConnect = useCallback(
     (params: Connection) => {
+      closeContextMenu();
+
       if (!params.source || !params.target) {
-        addLog('Verbindung ohne Quelle oder Ziel wurde verworfen.', 'warn');
+        safeAddLog('Verbindung ohne Quelle oder Ziel wurde verworfen.', 'warn');
         return;
       }
 
@@ -110,65 +454,25 @@ const TopologyCanvasContent: React.FC = () => {
       const targetDevice = devices.find((d) => d.id === params.target);
 
       if (!sourceDevice || !targetDevice) {
-        addLog('Die ausgewählten Geräte konnten nicht gefunden werden.', 'error');
+        safeAddLog('Die ausgewählten Geräte konnten nicht gefunden werden.', 'error');
         return;
       }
 
-      const sharedProtocols = sourceDevice.protocols.filter((p) => targetDevice.protocols.includes(p));
+      const sharedProtocols = sharedProtocolsOf(sourceDevice, targetDevice);
+
       if (sharedProtocols.length === 0) {
-        addLog(`Keine gemeinsame Verbindungsart zwischen ${sourceDevice.label} und ${targetDevice.label}.`, 'warn');
+        safeAddLog(`Keine kompatible Verbindungsart zwischen ${sourceDevice.label} und ${targetDevice.label}.`, 'warn');
         return;
       }
 
-      let chosenProtocol = sharedProtocols[0];
-
-      if (sharedProtocols.length > 1) {
-        const selection = window.prompt(
-          `Mehrere Protokolle verfügbar:\n${sharedProtocols
-            .map((p, i) => `${i + 1}. ${PROTOCOL_META[p]?.label ?? p}`)
-            .join('\n')}\nBitte eine Zahl auswählen:`,
-          '1'
-        );
-
-        const selectedIndex = selection ? Number(selection) - 1 : 0;
-        if (Number.isNaN(selectedIndex) || !sharedProtocols[selectedIndex]) {
-          addLog('Verbindungsaufbau wurde abgebrochen.', 'warn');
-          return;
-        }
-        chosenProtocol = sharedProtocols[selectedIndex];
-      }
-
-      // ✅ Duplikate inkl. Handles prüfen
-      const duplicate = edgesInStore.find(
-        (e) =>
-          e.source === params.source &&
-          e.target === params.target &&
-          e.protocol === chosenProtocol &&
-          (e.sourceHandle ?? null) === (params.sourceHandle ?? null) &&
-          (e.targetHandle ?? null) === (params.targetHandle ?? null)
-      );
-      if (duplicate) {
-        addLog('Diese Verbindung existiert bereits.', 'warn');
+      if (sharedProtocols.length === 1) {
+        finalizeCreateConnection(params, sourceDevice, targetDevice, sharedProtocols[0]);
         return;
       }
 
-      // ✅ Handles speichern!
-      addEdgeToStore({
-        source: params.source,
-        target: params.target,
-        protocol: chosenProtocol,
-        sourceHandle: params.sourceHandle ?? null,
-        targetHandle: params.targetHandle ?? null,
-      });
-
-      addLog(
-        `Verbindung erstellt: ${sourceDevice.label} ⇄ ${targetDevice.label} über ${
-          PROTOCOL_META[chosenProtocol]?.label ?? chosenProtocol
-        }.`,
-        'success'
-      );
+      openProtocolPickerCreate(params, sourceDevice, targetDevice, sharedProtocols);
     },
-    [addEdgeToStore, addLog, devices, edgesInStore]
+    [closeContextMenu, devices, finalizeCreateConnection, openProtocolPickerCreate, safeAddLog, sharedProtocolsOf]
   );
 
   const onDrop = useCallback(
@@ -176,31 +480,38 @@ const TopologyCanvasContent: React.FC = () => {
       event.preventDefault();
       if (!rf) return;
 
+      closeContextMenu();
+
       const type = event.dataTransfer.getData('application/reactflow');
       if (!type) return;
 
       const def = ALL_DEVICE_TYPES.find((d) => d.type === type);
       if (!def) {
-        addLog('Geräte-Typ konnte nicht gefunden werden.', 'error');
+        safeAddLog('Geräte-Typ konnte nicht gefunden werden.', 'error');
         return;
       }
 
-      const pos: XYPosition = rf.screenToFlowPosition({ x: event.clientX, y: event.clientY });
+      const cursorPos: XYPosition = rf.screenToFlowPosition({ x: event.clientX, y: event.clientY });
+      const centeredPos: XYPosition = {
+        x: cursorPos.x - NODE_W / 2,
+        y: cursorPos.y - NODE_H / 2,
+      };
 
       const newDev: Omit<Device, 'id'> = {
         type: def.type,
         label: def.label,
-        x: pos.x,
-        y: pos.y,
+        x: centeredPos.x,
+        y: centeredPos.y,
         protocols: def.protocols,
       };
+
       const created = addDevice(newDev);
 
       setNodes((nds) =>
         nds.concat({
           id: created.id,
           type: 'smartDevice',
-          position: pos,
+          position: centeredPos,
           data: {
             label: def.label,
             protocols: def.protocols,
@@ -210,9 +521,9 @@ const TopologyCanvasContent: React.FC = () => {
         })
       );
 
-      addLog(`Gerät platziert: ${def.label}`, 'info');
+      safeAddLog(`Gerät platziert: ${def.label}`, 'info');
     },
-    [rf, addDevice, addLog, setNodes]
+    [addDevice, closeContextMenu, rf, safeAddLog, setNodes]
   );
 
   const onDragOver = useCallback((e: React.DragEvent) => {
@@ -252,8 +563,93 @@ const TopologyCanvasContent: React.FC = () => {
     setSelectedEdgeIds(params.edges.map((e) => e.id));
   }, []);
 
+  // Wichtig: nicht preventDefault/stopPropagation, sonst selektiert ReactFlow nicht sauber.
+  const onNodeClick = useCallback(
+    (event: React.MouseEvent, node: FlowNode) => {
+      if (protocolPicker) return;
+      const pos = getMenuPos(event.clientX, event.clientY);
+      setContextMenu({ kind: 'node', id: node.id, x: pos.x, y: pos.y });
+    },
+    [getMenuPos, protocolPicker]
+  );
+
+  const onEdgeClick = useCallback(
+    (event: React.MouseEvent, edge: FlowEdge) => {
+      if (protocolPicker) return;
+      const pos = getMenuPos(event.clientX, event.clientY);
+      setContextMenu({ kind: 'edge', id: edge.id, x: pos.x, y: pos.y });
+    },
+    [getMenuPos, protocolPicker]
+  );
+
+  const onPaneClick = useCallback(() => {
+    closeContextMenu();
+  }, [closeContextMenu]);
+
+  const deleteNodeById = useCallback(
+    (id: string) => {
+      setNodes((curr) => curr.filter((n) => n.id !== id));
+      removeDevice(id);
+      safeAddLog('Gerät entfernt.', 'info');
+    },
+    [removeDevice, safeAddLog, setNodes]
+  );
+
+  const deleteEdgeById = useCallback(
+    (id: string) => {
+      setEdges((curr) => curr.filter((e) => e.id !== id));
+      removeEdgeFromStore(id);
+      safeAddLog('Verbindung entfernt.', 'info');
+    },
+    [removeEdgeFromStore, safeAddLog, setEdges]
+  );
+
+  const canSwitchProtocolForContextEdge = useMemo(() => {
+    if (!contextMenu || contextMenu.kind !== 'edge') return false;
+
+    const edge = edgesInStore.find((e: any) => e.id === contextMenu.id) as any;
+    if (!edge) return false;
+
+    const src = devices.find((d) => d.id === edge.source);
+    const tgt = devices.find((d) => d.id === edge.target);
+    if (!src || !tgt) return false;
+
+    const shared = sharedProtocolsOf(src, tgt);
+    return src.protocols.length >= 2 && tgt.protocols.length >= 2 && shared.length >= 2;
+  }, [contextMenu, devices, edgesInStore, sharedProtocolsOf]);
+
+  // Global: Klick ins Leere schließt Kontextmenü (auch bei MiniMap/Controls).
+  // Capture: läuft vor ReactFlow-Interna. Wichtig: nur schließen, wenn außerhalb von Menü/Modal.
+  useEffect(() => {
+    const handler = (e: PointerEvent) => {
+      const t = e.target as Node | null;
+
+      const inMenu = !!(t && contextMenuRef.current && contextMenuRef.current.contains(t));
+      const inModal = !!(t && modalRef.current && modalRef.current.contains(t));
+
+      if (!inMenu && !inModal) {
+        if (contextMenu) closeContextMenu();
+      }
+    };
+
+    window.addEventListener('pointerdown', handler, true);
+    return () => window.removeEventListener('pointerdown', handler, true);
+  }, [closeContextMenu, contextMenu]);
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        if (protocolPicker) {
+          cancelProtocolPicker();
+          return;
+        }
+        if (contextMenu) {
+          closeContextMenu();
+          return;
+        }
+        return;
+      }
+
       if (event.key !== 'Delete') return;
 
       const target = event.target as HTMLElement | null;
@@ -262,8 +658,12 @@ const TopologyCanvasContent: React.FC = () => {
         if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target.isContentEditable) return;
       }
 
+      if (protocolPicker) return;
+
       if (selectedNodeIds.length === 0 && selectedEdgeIds.length === 0) return;
+
       event.preventDefault();
+      closeContextMenu();
 
       if (selectedNodeIds.length > 0) {
         const ids = new Set(selectedNodeIds);
@@ -283,10 +683,29 @@ const TopologyCanvasContent: React.FC = () => {
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [removeDevice, removeEdgeFromStore, selectedEdgeIds, selectedNodeIds, setEdges, setNodes]);
+  }, [
+    cancelProtocolPicker,
+    closeContextMenu,
+    contextMenu,
+    protocolPicker,
+    removeDevice,
+    removeEdgeFromStore,
+    selectedEdgeIds,
+    selectedNodeIds,
+    setEdges,
+    setNodes,
+  ]);
+
+  const canConfirmProtocol = useMemo(() => {
+    if (!protocolPicker) return false;
+    const opt = protocolPicker.options.find((o) => o.protocol === protocolPicker.selected);
+    if (!opt) return false;
+    if (protocolPicker.mode === 'create') return !opt.disabled;
+    return true;
+  }, [protocolPicker]);
 
   return (
-    <div ref={wrapperRef} className="reactflow-wrapper h-full w-full bg-slate-100">
+    <div ref={wrapperRef} className="reactflow-wrapper relative h-full w-full bg-slate-100">
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -297,16 +716,142 @@ const TopologyCanvasContent: React.FC = () => {
         onDrop={onDrop}
         onDragOver={onDragOver}
         onNodeDragStop={onNodeDragStop}
+        onNodeClick={onNodeClick}
+        onEdgeClick={onEdgeClick}
+        onPaneClick={onPaneClick}
         onInit={setRf}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         proOptions={{ hideAttribution: true }}
-        fitView
+        noPanClassName="nopan"
+        noDragClassName="nodrag"
       >
         <MiniMap className="!bg-white/70" />
         <Controls position="top-right" />
         <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
       </ReactFlow>
+
+      {/* Kontextmenü */}
+      {contextMenu && (
+        <div
+          ref={contextMenuRef}
+          className="absolute z-50 pointer-events-auto nopan nodrag"
+          style={{ left: contextMenu.x, top: contextMenu.y }}
+        >
+          <div className="rounded-2xl bg-white shadow-xl ring-1 ring-black/10">
+            <div className="flex items-center gap-1 p-1">
+              {contextMenu.kind === 'edge' && canSwitchProtocolForContextEdge && (
+                <button
+                  type="button"
+                  className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm hover:bg-slate-50"
+                  onClick={() => openProtocolPickerEdit(contextMenu.id)}
+                >
+                  <span className="text-base">🔁</span>
+                  <span className="font-medium text-slate-900">Protokoll ändern</span>
+                </button>
+              )}
+
+              <button
+                type="button"
+                className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm hover:bg-slate-50"
+                onClick={() => {
+                  const { id, kind } = contextMenu;
+                  closeContextMenu();
+                  if (kind === 'node') deleteNodeById(id);
+                  if (kind === 'edge') deleteEdgeById(id);
+                }}
+              >
+                <span className="text-base">🗑️</span>
+                <span className="font-medium text-slate-900">Löschen</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Protokoll-Picker Modal */}
+      {protocolPicker && (
+        <div
+          className="absolute inset-0 z-50 flex items-center justify-center bg-black/30 p-4 nopan nodrag"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) cancelProtocolPicker();
+          }}
+        >
+          <div
+            ref={modalRef}
+            role="dialog"
+            aria-modal="true"
+            className="w-full max-w-md rounded-2xl bg-white shadow-xl ring-1 ring-black/10"
+          >
+            <div className="border-b border-slate-200 p-4">
+              <div className="text-lg font-semibold text-slate-900">
+                {protocolPicker.mode === 'edit' ? 'Protokoll ändern' : 'Verbindung herstellen'}
+              </div>
+              <div className="mt-1 text-sm text-slate-600">
+                {protocolPicker.sourceDevice.label} ⇄ {protocolPicker.targetDevice.label}
+              </div>
+            </div>
+
+            <div className="p-4">
+              <div className="text-sm font-medium text-slate-700">Protokoll auswählen</div>
+
+              <div className="mt-3 max-h-64 space-y-2 overflow-auto pr-1">
+                {protocolPicker.options.map((opt) => {
+                  const meta = PROTOCOL_META[opt.protocol];
+                  const selected = protocolPicker.selected === opt.protocol;
+
+                  const disabled = protocolPicker.mode === 'create' ? opt.disabled : false;
+
+                  return (
+                    <button
+                      key={String(opt.protocol)}
+                      type="button"
+                      disabled={disabled}
+                      onClick={() => setProtocolPicker((s) => (s ? { ...s, selected: opt.protocol } : s))}
+                      className={[
+                        'w-full rounded-xl border px-3 py-2 text-left transition',
+                        disabled ? 'cursor-not-allowed opacity-50' : 'hover:bg-slate-50',
+                        selected ? 'border-slate-900 bg-slate-50' : 'border-slate-200 bg-white',
+                      ].join(' ')}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="h-3 w-3 rounded-full" style={{ backgroundColor: meta?.color ?? '#4b5563' }} />
+                        <div className="flex-1">
+                          <div className="text-sm font-medium text-slate-900">{meta?.label ?? String(opt.protocol)}</div>
+                          {opt.hint && <div className="text-xs text-slate-600">{opt.hint}</div>}
+                        </div>
+                        {selected && <div className="text-xs font-semibold text-slate-700">Ausgewählt</div>}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between border-t border-slate-200 p-4">
+              <button
+                type="button"
+                onClick={cancelProtocolPicker}
+                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              >
+                Abbrechen
+              </button>
+
+              <button
+                type="button"
+                onClick={confirmProtocolPicker}
+                disabled={!canConfirmProtocol}
+                className={[
+                  'rounded-xl px-3 py-2 text-sm font-semibold',
+                  canConfirmProtocol ? 'bg-slate-900 text-white hover:bg-slate-800' : 'bg-slate-200 text-slate-500',
+                ].join(' ')}
+              >
+                Bestätigen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
