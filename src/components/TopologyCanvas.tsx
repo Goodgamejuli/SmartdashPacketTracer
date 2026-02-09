@@ -20,9 +20,9 @@ import '@xyflow/react/dist/style.css';
 
 import { ALL_DEVICE_TYPES, DEVICE_CATEGORY_META } from '../model/deviceTypes';
 import { PROTOCOL_META } from '../model/protocols';
-import { type Device, useTopologyStore } from '../store/useTopologyStore';
+import { type Device, useTopologyStore } from '../model/useTopologyStore';
 
-import SmartDeviceNode from './nodes/SmartDeviceNode';
+import SmartDeviceNode from '../components/SmartDeviceNode';
 import ProtocolEdge from './ProtocolEdge';
 
 const nodeTypes = { smartDevice: SmartDeviceNode };

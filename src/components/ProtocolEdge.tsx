@@ -3,7 +3,7 @@ import { BaseEdge, EdgeLabelRenderer, getBezierPath, type EdgeProps } from '@xyf
 
 import type { Protocol } from '../model/schema';
 import { PROTOCOL_META } from '../model/protocols';
-import { useTopologyStore, type FlightEvent } from '../store/useTopologyStore';
+import { useTopologyStore, type FlightEvent } from '../model/useTopologyStore';
 
 type ProtocolEdgeData = {
   protocol?: Protocol;

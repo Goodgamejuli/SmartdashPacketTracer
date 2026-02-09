@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { useTopologyStore } from '../store/useTopologyStore';
+import { useTopologyStore } from '../model/useTopologyStore';
 
 type TopBarProps = {
   onShowTutorial: () => void;

@@ -1,5 +1,5 @@
 import React from 'react';
-import AppShell from './pages/AppShell';
+import AppShell from './components/AppShell';
 
 //Anwendungsstart (AppShell weiterreichen)
 function App() {

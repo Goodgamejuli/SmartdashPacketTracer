@@ -1,5 +1,5 @@
 import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { useTopologyStore, type LogEntry, type LogLevel } from '../store/useTopologyStore';
+import { useTopologyStore, type LogEntry, type LogLevel } from '../model/useTopologyStore';
 
 const levelMeta: Record<LogLevel, { icon: string; cls: string }> = {
   info: { icon: 'ℹ️', cls: 'text-slate-700' },

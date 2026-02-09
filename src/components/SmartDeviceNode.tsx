@@ -2,8 +2,8 @@ import React from 'react';
 import { Handle, Position } from '@xyflow/react';
 import type { Node, NodeProps } from '@xyflow/react';
 
-import type { Protocol } from '../../model/schema';
-import { PROTOCOL_META } from '../../model/protocols';
+import type { Protocol } from '../model/schema';
+import { PROTOCOL_META } from '../model/protocols';
 
 export type SmartDeviceNodeData = {
   label: string;

@@ -1,4 +1,4 @@
-import { useTopologyStore } from '../store/useTopologyStore';
+import { useTopologyStore } from '../model/useTopologyStore';
 import type { Protocol } from '../model/schema';
 import { PROTOCOL_META } from '../model/protocols';
 
