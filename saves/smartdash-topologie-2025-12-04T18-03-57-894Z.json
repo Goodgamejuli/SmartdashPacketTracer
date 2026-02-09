@@ -1,0 +1,895 @@
+{
+  "meta": {
+    "exportedAt": "2025-12-04T18:03:57.890Z",
+    "deviceCount": 49,
+    "edgeCount": 48
+  },
+  "devices": [
+    {
+      "id": "fritzbox",
+      "type": "fritzbox_gateway",
+      "label": "Fritzbox",
+      "x": -11.484117433482353,
+      "y": 275.6976511268303,
+      "protocols": [
+        "WLAN",
+        "DECT",
+        "Ethernet"
+      ]
+    },
+    {
+      "id": "fritz_gateway",
+      "type": "fritz_gateway",
+      "label": "Fritz Gateway",
+      "x": -301.38759376406426,
+      "y": 217.99039796695388,
+      "protocols": [
+        "DECT"
+      ]
+    },
+    {
+      "id": "fritz_funksteckdose",
+      "type": "fritz_funksteckdose",
+      "label": "Fritz Funksteckdose",
+      "x": -300.6678863032871,
+      "y": 327.04076353380384,
+      "protocols": [
+        "DECT"
+      ]
+    },
+    {
+      "id": "poe_switch",
+      "type": "poe_switch",
+      "label": "PoE-Switch",
+      "x": 704.4340927804412,
+      "y": 280.05264562551747,
+      "protocols": [
+        "Ethernet"
+      ]
+    },
+    {
+      "id": "dell_laptop",
+      "type": "laptop",
+      "label": "Dell Laptop",
+      "x": 977.8217935372693,
+      "y": 134.7561921378188,
+      "protocols": [
+        "Ethernet"
+      ]
+    },
+    {
+      "id": "pfsense",
+      "type": "pfsense",
+      "label": "pfSense",
+      "x": 1168.6933643668626,
+      "y": 283.3657050717358,
+      "protocols": [
+        "Ethernet"
+      ]
+    },
+    {
+      "id": "hue_bridge",
+      "type": "philips_hue_bridge",
+      "label": "Philips Hue Bridge",
+      "x": 674.4445942104306,
+      "y": -111.93334935007124,
+      "protocols": [
+        "Ethernet",
+        "ZigBee"
+      ]
+    },
+    {
+      "id": "hue_lamp",
+      "type": "hue_lamp",
+      "label": "Philips Hue Schreibtischlampe",
+      "x": 357.42114969491564,
+      "y": -108.9932324350731,
+      "protocols": [
+        "ZigBee"
+      ]
+    },
+    {
+      "id": "hue_motion",
+      "type": "hue_motion_sensor",
+      "label": "Philips Hue Bewegungssensor",
+      "x": 358.7752839493405,
+      "y": -250.77333425182664,
+      "protocols": [
+        "ZigBee"
+      ]
+    },
+    {
+      "id": "homematic_controller",
+      "type": "homematic_controller",
+      "label": "Homematic Controller",
+      "x": 964.5380870177796,
+      "y": -109.49623485358663,
+      "protocols": [
+        "Ethernet",
+        "ZigBee"
+      ]
+    },
+    {
+      "id": "homematic_motion",
+      "type": "homematic_motion_sensor",
+      "label": "Homematic Bewegungssensor",
+      "x": 939.169057627639,
+      "y": -266.4854300805172,
+      "protocols": [
+        "ZigBee"
+      ]
+    },
+    {
+      "id": "homematic_smoke",
+      "type": "homematic_rauchmelder",
+      "label": "Homematic Rauchmelder",
+      "x": 1287.187591081936,
+      "y": -267.09688253013474,
+      "protocols": [
+        "ZigBee"
+      ]
+    },
+    {
+      "id": "pixel_7a",
+      "type": "smartphone",
+      "label": "Pixel 7a",
+      "x": 357.0358740936015,
+      "y": 685.5900058830588,
+      "protocols": [
+        "WLAN",
+        "BLE"
+      ]
+    },
+    {
+      "id": "switchbot_hub",
+      "type": "switchbot_hub_mini",
+      "label": "Switchbot Hub Mini",
+      "x": 604.3146690074603,
+      "y": 481.54824335342664,
+      "protocols": [
+        "BLE",
+        "WLAN"
+      ]
+    },
+    {
+      "id": "switchbot_fensterkontakt",
+      "type": "switchbot_fensterkontakt",
+      "label": "SwitchBot Fensterkontakt",
+      "x": 603.9064549048791,
+      "y": 587.5311221082145,
+      "protocols": [
+        "BLE"
+      ]
+    },
+    {
+      "id": "garmin_watch",
+      "type": "garmin_smartwatch",
+      "label": "Garmin Smartwatch",
+      "x": 608.3761502146352,
+      "y": 694.5742168635517,
+      "protocols": [
+        "BLE"
+      ]
+    },
+    {
+      "id": "abus_lock",
+      "type": "abus_fahrradschloss",
+      "label": "Abus Fahrradschloss",
+      "x": 608.8913064914527,
+      "y": 800.3430461740119,
+      "protocols": [
+        "BLE"
+      ]
+    },
+    {
+      "id": "masterlock",
+      "type": "masterlock_schluesseltresor",
+      "label": "Masterlock Schlüsseltresor",
+      "x": 612.0458238712581,
+      "y": 912.9649782387976,
+      "protocols": [
+        "BLE"
+      ]
+    },
+    {
+      "id": "oralb_toothbrush",
+      "type": "oralb_zahnbuerste",
+      "label": "OralB Zahnbürste",
+      "x": 613.0608914547354,
+      "y": 1023.6875462830773,
+      "protocols": [
+        "BLE"
+      ]
+    },
+    {
+      "id": "hama_camera",
+      "type": "camera",
+      "label": "Hama Kamera",
+      "x": -340.65844983621855,
+      "y": 484.27784415314204,
+      "protocols": [
+        "WLAN"
+      ]
+    },
+    {
+      "id": "ring_camera",
+      "type": "camera",
+      "label": "Ring Kamera",
+      "x": 604.5529939985685,
+      "y": 392.898055735208,
+      "protocols": [
+        "WLAN"
+      ]
+    },
+    {
+      "id": "smart_display",
+      "type": "amazon_echo_show",
+      "label": "Amazon Echo Show Smart Display",
+      "x": 102.10554583378314,
+      "y": 1128.1183293813522,
+      "protocols": [
+        "WLAN"
+      ]
+    },
+    {
+      "id": "chromecast",
+      "type": "chromecast",
+      "label": "Google Chromecast",
+      "x": -107.8818626175318,
+      "y": 1127.1180125542646,
+      "protocols": [
+        "WLAN"
+      ]
+    },
+    {
+      "id": "firetv_stick",
+      "type": "firetv_stick",
+      "label": "FireTV Stick",
+      "x": -341.0676082982273,
+      "y": 1121.1885045181198,
+      "protocols": [
+        "WLAN"
+      ]
+    },
+    {
+      "id": "levoit_air_purifier",
+      "type": "air_purifier",
+      "label": "Levoit Luftreiniger",
+      "x": 405.9640469012995,
+      "y": 1127.1180125542646,
+      "protocols": [
+        "WLAN"
+      ]
+    },
+    {
+      "id": "withings_scale",
+      "type": "withings_koerperwaage",
+      "label": "Withings Körperwaage",
+      "x": -343.6315440090676,
+      "y": 1021.115966786184,
+      "protocols": [
+        "WLAN"
+      ]
+    },
+    {
+      "id": "tplink_socket",
+      "type": "tplink_funksteckdose",
+      "label": "TP-Link Funksteckdose",
+      "x": -344.03236231629967,
+      "y": 916.59629802714,
+      "protocols": [
+        "WLAN"
+      ]
+    },
+    {
+      "id": "jura_coffee_machine",
+      "type": "coffee_machine",
+      "label": "Jura 8 Kaffeemaschine",
+      "x": -343.2307257018355,
+      "y": 575.6495859488051,
+      "protocols": [
+        "WLAN"
+      ]
+    },
+    {
+      "id": "roborock_vacuum",
+      "type": "roborock_vacuum",
+      "label": "Roborock 8 Staubsauger",
+      "x": -343.13610074062507,
+      "y": 686.0745835000158,
+      "protocols": [
+        "WLAN"
+      ]
+    },
+    {
+      "id": "thermomix_m6",
+      "type": "thermomix_m6",
+      "label": "Thermomix M6",
+      "x": -345.514739325336,
+      "y": 803.9114660964075,
+      "protocols": [
+        "WLAN"
+      ]
+    },
+    {
+      "id": "openhub_server",
+      "type": "openhub_server",
+      "label": "OpenHUB",
+      "x": 906.4611047949522,
+      "y": 391.8447677010782,
+      "protocols": [
+        "Ethernet"
+      ]
+    },
+    {
+      "id": "vorwerk_server",
+      "type": "vorwerk_server",
+      "label": "Vorwerk Server",
+      "x": 903.9387946592205,
+      "y": 501.9609536679992,
+      "protocols": [
+        "Ethernet"
+      ]
+    },
+    {
+      "id": "switchbot_server",
+      "type": "switchbot_server",
+      "label": "SwitchBot Server",
+      "x": 895.7864285067308,
+      "y": 730.638868019849,
+      "protocols": [
+        "Ethernet"
+      ]
+    },
+    {
+      "id": "google_server",
+      "type": "google_server",
+      "label": "Google Server",
+      "x": 907.684584687571,
+      "y": 616.4209758299431,
+      "protocols": [
+        "Ethernet"
+      ]
+    },
+    {
+      "id": "bosch_server",
+      "type": "bosch_server",
+      "label": "Bosch Server",
+      "x": 1437.8000227109756,
+      "y": 395.52377028696174,
+      "protocols": [
+        "Ethernet"
+      ]
+    },
+    {
+      "id": "amazon_server",
+      "type": "amazon_server",
+      "label": "Amazon Server",
+      "x": 1439.2051507994438,
+      "y": 730.0996928840552,
+      "protocols": [
+        "Ethernet"
+      ]
+    },
+    {
+      "id": "phillips_server",
+      "type": "phillips_server",
+      "label": "Phillips Server",
+      "x": 1440.5145116751837,
+      "y": 497.83118734358993,
+      "protocols": [
+        "Ethernet"
+      ]
+    },
+    {
+      "id": "54",
+      "type": "bosch_water_sensor",
+      "label": "Bosch Wassersensor",
+      "x": -297.64801160018084,
+      "y": -237.7271759761599,
+      "protocols": [
+        "ZigBee"
+      ]
+    },
+    {
+      "id": "139",
+      "type": "homematic_server",
+      "label": "Homematic Server",
+      "x": 1440.5320894476454,
+      "y": 614.0473857547973,
+      "protocols": [
+        "Ethernet"
+      ]
+    },
+    {
+      "id": "wifi_hub",
+      "type": "mesh_access_point",
+      "label": "WLAN Hub",
+      "x": 32.91985506162763,
+      "y": 685.5559844192011,
+      "protocols": [
+        "WLAN",
+        "Ethernet"
+      ]
+    },
+    {
+      "id": "464",
+      "type": "bosch_controller",
+      "label": "Bosch Smart Home Controller",
+      "x": 74.62752482220796,
+      "y": -108.61360505570417,
+      "protocols": [
+        "ZigBee",
+        "Ethernet"
+      ]
+    },
+    {
+      "id": "490",
+      "type": "bosch_motion_sensor",
+      "label": "Bosch Bewegungssensor",
+      "x": -295.9323296100302,
+      "y": 83.00527202052845,
+      "protocols": [
+        "ZigBee"
+      ]
+    },
+    {
+      "id": "493",
+      "type": "bosch_fire_alarm",
+      "label": "Bosch Feuermelder",
+      "x": -295.1337657388155,
+      "y": -26.397978335888872,
+      "protocols": [
+        "ZigBee"
+      ]
+    },
+    {
+      "id": "496",
+      "type": "bosch_tuerschloss",
+      "label": "Bosch Türschloss",
+      "x": -295.3746580792159,
+      "y": -133.0195869431352,
+      "protocols": [
+        "ZigBee"
+      ]
+    },
+    {
+      "id": "499",
+      "type": "bosch_fensterkontakt",
+      "label": "Bosch Fensterkontakt (DECT)",
+      "x": -297.5233564342129,
+      "y": -335.95916870071994,
+      "protocols": [
+        "ZigBee"
+      ]
+    },
+    {
+      "id": "638",
+      "type": "bosch_camera",
+      "label": "Bosch Innenkamera",
+      "x": 106.1470015851217,
+      "y": -238.76981949688783,
+      "protocols": [
+        "WLAN"
+      ]
+    },
+    {
+      "id": "679",
+      "type": "bosch-smart-plug",
+      "label": "Bosch Funksteckdose",
+      "x": -36.347026477064205,
+      "y": -333.93413689168506,
+      "protocols": [
+        "WLAN",
+        "ZigBee"
+      ]
+    },
+    {
+      "id": "698",
+      "type": "homematic_funksteckdose",
+      "label": "Homematic Funksteckdose",
+      "x": 1287.1194080281464,
+      "y": -109.61779206029333,
+      "protocols": [
+        "ZigBee",
+        "WLAN"
+      ]
+    },
+    {
+      "id": "5850",
+      "type": "internet_provider",
+      "label": "Internet-provider",
+      "x": 1157.7723912665886,
+      "y": 559.26068194211,
+      "protocols": [
+        "Ethernet"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "174",
+      "source": "poe_switch",
+      "target": "homematic_controller",
+      "protocol": "Ethernet",
+      "sourceHandle": "top-source",
+      "targetHandle": "bottom-target"
+    },
+    {
+      "id": "177",
+      "source": "homematic_controller",
+      "target": "homematic_motion",
+      "protocol": "ZigBee",
+      "sourceHandle": "top-source",
+      "targetHandle": "bottom-target"
+    },
+    {
+      "id": "190",
+      "source": "poe_switch",
+      "target": "hue_bridge",
+      "protocol": "Ethernet",
+      "sourceHandle": "top-source",
+      "targetHandle": "bottom-target"
+    },
+    {
+      "id": "210",
+      "source": "wifi_hub",
+      "target": "fritzbox",
+      "protocol": "Ethernet",
+      "sourceHandle": "top-source",
+      "targetHandle": "bottom-target"
+    },
+    {
+      "id": "218",
+      "source": "jura_coffee_machine",
+      "target": "wifi_hub",
+      "protocol": "WLAN",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target"
+    },
+    {
+      "id": "220",
+      "source": "roborock_vacuum",
+      "target": "wifi_hub",
+      "protocol": "WLAN",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target"
+    },
+    {
+      "id": "222",
+      "source": "thermomix_m6",
+      "target": "wifi_hub",
+      "protocol": "WLAN",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target"
+    },
+    {
+      "id": "224",
+      "source": "tplink_socket",
+      "target": "wifi_hub",
+      "protocol": "WLAN",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target"
+    },
+    {
+      "id": "226",
+      "source": "withings_scale",
+      "target": "wifi_hub",
+      "protocol": "WLAN",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target"
+    },
+    {
+      "id": "228",
+      "source": "firetv_stick",
+      "target": "wifi_hub",
+      "protocol": "WLAN",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target"
+    },
+    {
+      "id": "231",
+      "source": "chromecast",
+      "target": "wifi_hub",
+      "protocol": "WLAN",
+      "sourceHandle": "top-source",
+      "targetHandle": "bottom-target"
+    },
+    {
+      "id": "240",
+      "source": "smart_display",
+      "target": "wifi_hub",
+      "protocol": "WLAN",
+      "sourceHandle": "top-source",
+      "targetHandle": "right-target"
+    },
+    {
+      "id": "248",
+      "source": "levoit_air_purifier",
+      "target": "wifi_hub",
+      "protocol": "WLAN",
+      "sourceHandle": "top-source",
+      "targetHandle": "right-target"
+    },
+    {
+      "id": "272",
+      "source": "wifi_hub",
+      "target": "switchbot_hub",
+      "protocol": "WLAN",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target"
+    },
+    {
+      "id": "310",
+      "source": "poe_switch",
+      "target": "fritzbox",
+      "protocol": "Ethernet",
+      "sourceHandle": "left-source",
+      "targetHandle": "right-target"
+    },
+    {
+      "id": "409",
+      "source": "fritzbox",
+      "target": "fritz_gateway",
+      "protocol": "DECT",
+      "sourceHandle": "left-source",
+      "targetHandle": "right-target"
+    },
+    {
+      "id": "434",
+      "source": "poe_switch",
+      "target": "pfsense",
+      "protocol": "Ethernet",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target"
+    },
+    {
+      "id": "452",
+      "source": "homematic_controller",
+      "target": "homematic_smoke",
+      "protocol": "ZigBee",
+      "sourceHandle": "top-source",
+      "targetHandle": "bottom-target"
+    },
+    {
+      "id": "488",
+      "source": "poe_switch",
+      "target": "464",
+      "protocol": "Ethernet",
+      "sourceHandle": "top-source",
+      "targetHandle": "bottom-target"
+    },
+    {
+      "id": "502",
+      "source": "464",
+      "target": "499",
+      "protocol": "ZigBee",
+      "sourceHandle": "left-source",
+      "targetHandle": "right-target"
+    },
+    {
+      "id": "505",
+      "source": "464",
+      "target": "496",
+      "protocol": "ZigBee",
+      "sourceHandle": "left-source",
+      "targetHandle": "right-target"
+    },
+    {
+      "id": "507",
+      "source": "464",
+      "target": "493",
+      "protocol": "ZigBee",
+      "sourceHandle": "left-source",
+      "targetHandle": "right-target"
+    },
+    {
+      "id": "513",
+      "source": "464",
+      "target": "490",
+      "protocol": "ZigBee",
+      "sourceHandle": "left-source",
+      "targetHandle": "right-target"
+    },
+    {
+      "id": "533",
+      "source": "hue_lamp",
+      "target": "hue_bridge",
+      "protocol": "ZigBee",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target"
+    },
+    {
+      "id": "535",
+      "source": "hue_bridge",
+      "target": "hue_motion",
+      "protocol": "ZigBee",
+      "sourceHandle": "top-source",
+      "targetHandle": "right-target"
+    },
+    {
+      "id": "539",
+      "source": "wifi_hub",
+      "target": "hama_camera",
+      "protocol": "WLAN",
+      "sourceHandle": "left-source",
+      "targetHandle": "right-target"
+    },
+    {
+      "id": "543",
+      "source": "ring_camera",
+      "target": "wifi_hub",
+      "protocol": "WLAN",
+      "sourceHandle": "left-source",
+      "targetHandle": "right-target"
+    },
+    {
+      "id": "567",
+      "source": "garmin_watch",
+      "target": "pixel_7a",
+      "protocol": "BLE",
+      "sourceHandle": "left-source",
+      "targetHandle": "right-target"
+    },
+    {
+      "id": "569",
+      "source": "abus_lock",
+      "target": "pixel_7a",
+      "protocol": "BLE",
+      "sourceHandle": "left-source",
+      "targetHandle": "right-target"
+    },
+    {
+      "id": "571",
+      "source": "masterlock",
+      "target": "pixel_7a",
+      "protocol": "BLE",
+      "sourceHandle": "left-source",
+      "targetHandle": "right-target"
+    },
+    {
+      "id": "573",
+      "source": "oralb_toothbrush",
+      "target": "pixel_7a",
+      "protocol": "BLE",
+      "sourceHandle": "left-source",
+      "targetHandle": "right-target"
+    },
+    {
+      "id": "612",
+      "source": "switchbot_fensterkontakt",
+      "target": "switchbot_hub",
+      "protocol": "BLE",
+      "sourceHandle": "top-source",
+      "targetHandle": "bottom-target"
+    },
+    {
+      "id": "622",
+      "source": "fritzbox",
+      "target": "pixel_7a",
+      "protocol": "WLAN",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target"
+    },
+    {
+      "id": "636",
+      "source": "464",
+      "target": "54",
+      "protocol": "ZigBee",
+      "sourceHandle": "left-source",
+      "targetHandle": "right-target"
+    },
+    {
+      "id": "667",
+      "source": "fritzbox",
+      "target": "fritz_funksteckdose",
+      "protocol": "DECT",
+      "sourceHandle": "left-source",
+      "targetHandle": "right-target"
+    },
+    {
+      "id": "677",
+      "source": "poe_switch",
+      "target": "dell_laptop",
+      "protocol": "Ethernet",
+      "sourceHandle": "top-source",
+      "targetHandle": "bottom-target"
+    },
+    {
+      "id": "690",
+      "source": "464",
+      "target": "679",
+      "protocol": "ZigBee",
+      "sourceHandle": "left-source",
+      "targetHandle": "bottom-target"
+    },
+    {
+      "id": "694",
+      "source": "679",
+      "target": "638",
+      "protocol": "WLAN",
+      "sourceHandle": "right-source",
+      "targetHandle": "top-target"
+    },
+    {
+      "id": "702",
+      "source": "698",
+      "target": "homematic_controller",
+      "protocol": "ZigBee",
+      "sourceHandle": "left-source",
+      "targetHandle": "right-target"
+    },
+    {
+      "id": "5861",
+      "source": "5850",
+      "target": "pfsense",
+      "protocol": "Ethernet",
+      "sourceHandle": "top-source",
+      "targetHandle": "bottom-target"
+    },
+    {
+      "id": "5864",
+      "source": "5850",
+      "target": "openhub_server",
+      "protocol": "Ethernet",
+      "sourceHandle": "left-source",
+      "targetHandle": "right-target"
+    },
+    {
+      "id": "5866",
+      "source": "5850",
+      "target": "vorwerk_server",
+      "protocol": "Ethernet",
+      "sourceHandle": "left-source",
+      "targetHandle": "right-target"
+    },
+    {
+      "id": "5869",
+      "source": "5850",
+      "target": "google_server",
+      "protocol": "Ethernet",
+      "sourceHandle": "left-source",
+      "targetHandle": "right-target"
+    },
+    {
+      "id": "5872",
+      "source": "5850",
+      "target": "switchbot_server",
+      "protocol": "Ethernet",
+      "sourceHandle": "left-source",
+      "targetHandle": "right-target"
+    },
+    {
+      "id": "5874",
+      "source": "5850",
+      "target": "bosch_server",
+      "protocol": "Ethernet",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target"
+    },
+    {
+      "id": "5877",
+      "source": "5850",
+      "target": "phillips_server",
+      "protocol": "Ethernet",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target"
+    },
+    {
+      "id": "5880",
+      "source": "5850",
+      "target": "139",
+      "protocol": "Ethernet",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target"
+    },
+    {
+      "id": "5883",
+      "source": "5850",
+      "target": "amazon_server",
+      "protocol": "Ethernet",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target"
+    }
+  ]
+}

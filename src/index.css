@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+/*Brief-Animation*/
+@keyframes packet-move {
+  from {
+    offset-distance: 0%;
+  }
+  to {
+    offset-distance: 100%;
+  }
+}
+
+/* Größere runde Handles */
+.react-flow__handle {
+  width: 10px;              /* sichtbare Größe */
+  height: 10px;
+  border-radius: 50%;
+  background: transparent;  /* wenn du nur Rahmen willst */
+  border: 2px solid #3b82f6;      /* wichtig für das Pseudo-Element */
+  opacity: 0.2;
+}
+
+/* Unsichtbare, aber klickbare Zone */
+.react-flow__handle::before {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  background: transparent;
+  /* pointer-events: auto ist default → Klicks zählen auf das Element */
+}
+
+
+
+/*
+ * Global styles can be defined here. Tailwind CSS classes are available
+ * throughout the project thanks to the import above.
+ */
