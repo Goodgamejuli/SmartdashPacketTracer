@@ -15,7 +15,7 @@ const AppShell: React.FC = () => {
     let stopped = false;
 
     //WS Adresse 
-    const WS_URL = `ws://${window.location.hostname}:8765/packets`;
+    const WS_URL = 'ws://192.168.2.33:8765/packets'; //'ws://localhost:8765/packets'; //192.168.2.33:8765
 
     const connect = () => {
       if (stopped) return;
