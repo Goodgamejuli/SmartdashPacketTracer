@@ -22,8 +22,8 @@ const RollingLog: React.FC = () => {
 
   const safe = Array.isArray(logs) ? (logs as LogEntry[]) : [];
 
-  // ✅ Live=true => immer oben
-  // ✅ Live=false => Pause: garantiert NICHT mitscrollen
+  //  Live=true => immer oben
+  //  Live=false => Pause: garantiert NICHT mitscrollen
   const [live, setLive] = useState(true);
 
   const boxRef = useRef<HTMLDivElement | null>(null);

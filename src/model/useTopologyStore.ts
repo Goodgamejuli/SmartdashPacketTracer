@@ -87,7 +87,7 @@ export type PacketLike = {
   /**
    * TTL optional:
    * - Wenn packetId noch NICHT bekannt: initialisiert TTL
-   * - Wenn packetId schon bekannt: wird IGNORIERT (kein Reset!)
+   * - Wenn packetId schon bekannt: wird IGNORIERT 
    */
   ttlMs?: number;
 
@@ -102,19 +102,17 @@ export type PacketLike = {
 let _id = 0;
 const nextId = () => String(++_id);
 
-// Packet-ID -> Timer für TTL-Ablauf (damit wir TTL-Cleanup genau EINMAL planen)
+// Packet-ID -> Timer für TTL-Ablauf 
 const packetExpiryTimers = new Map<string, number>();
 
-// Tombstones: wenn TTL abgelaufen ist, dürfen späte Hops derselben packetId NICHT "wiederbeleben"
+// Wenn TTL abgelaufen ist, dürfen späte Hops derselben packetId NICHT "wiederbeleben"
 const deadPacketIds = new Map<string, number>(); // packetId -> keepUntil
 const DEAD_PACKET_RETENTION_MS = 60_000;
 
-// ===== VISUAL CLEANUP TIMING (aus dem "everything works"-Stand abgeleitet) =====
 // Idee: Flight wird VOR Animationsende entfernt => er kann nicht am Node parken.
 // Größerer Wert => verschwindet früher (glatter, aber evtl. "kürzer sichtbar").
-//
-// Du kannst hier wie früher stark spielen (z.B. 80..400). In deinem alten Stand war es extrem hoch.
-const REMOVE_BEFORE_ANIM_END_MS = 2000; // <-- HIER einstellen
+
+const REMOVE_BEFORE_ANIM_END_MS = 2000; 
 
 const updateSequenceSeed = (candidate: string | undefined) => {
   if (!candidate) return;
@@ -338,9 +336,9 @@ export const useTopologyStore = create<State>((set, get) => ({
     if (pid && isDeadPacketId(pid, now)) return;
 
     // 1) TTL-Logik (WICHTIG):
-    // - TTL darf nach jedem Hop NICHT resetten.
-    // - expiresAt wird pro packetId EINMAL festgelegt und dann nur noch übernommen.
-    // - ttlMs wird NUR berücksichtigt, wenn packetId noch KEIN expiresAt besitzt.
+    // - TTL darf nach jedem Hop NICHT resetten
+    // - expiresAt wird pro packetId EINMAL festgelegt und dann nur noch übernommen
+    // - ttlMs wird NUR berücksichtigt, wenn packetId noch KEIN expiresAt besitzt
     let expiresAt: number;
 
     if (pid) {
@@ -421,12 +419,9 @@ export const useTopologyStore = create<State>((set, get) => ({
       return { flightsByEdgeId: { ...s.flightsByEdgeId, [edgeId]: next } };
     });
 
-    // 3) VISUAL CLEANUP (das ist die relevante Funktion aus deinem alten Stand)
+    // 3) VISUAL CLEANUP 
     // Bedingung ist NICHT "TTL <= 0", sondern:
     // => Flight verschwindet, wenn Hop-Ende erreicht ODER TTL-Ende erreicht (was früher kommt).
-    //
-    // In deinem alten Stand wurde "Hop-Ende" früher gesetzt (d - REMOVE_BEFORE_ANIM_END_MS),
-    // damit nichts am Node parkt.
     const msUntilTtlEnd = Math.max(0, expiresAt - Date.now());
 
     // früher als Animationsende löschen:
@@ -470,7 +465,7 @@ export const useTopologyStore = create<State>((set, get) => ({
     // (A) Späte Hops nach TTL-Ende werden geschluckt
     if (pid && isDeadPacketId(pid, now)) return;
 
-    // (B) Wenn packetId existiert und TTL bereits abgelaufen -> tombstone setzen und ignorieren
+    // (B) Wenn packetId existiert und TTL bereits abgelaufen -> ignorieren
     if (pid) {
       const exp = get().expiresAtByPacketId[pid];
       if (typeof exp === 'number' && now >= exp) {

@@ -49,7 +49,7 @@ const ProtocolEdge: React.FC<EdgeProps> = (props) => {
   const safePath = useMemo(() => edgePath.replaceAll("'", "\\'"), [edgePath]);
   const label = (protocol && PROTOCOL_META[protocol]?.label) ?? protocol ?? '';
 
-  // ✅ WICHTIG: Flight ist nur aktiv bis min(HopEnde, TTL-Ende)
+  // WICHTIG: Flight ist nur aktiv bis min(HopEnde, TTL-Ende)
   const activeFlights = useMemo(() => {
     return flights.filter((f) => {
       const ttlEndAt =

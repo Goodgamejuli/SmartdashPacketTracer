@@ -2,7 +2,6 @@
 setlocal
 cd /d "%~dp0"
 
-echo [DEBUG] Projektpfad: %cd%
 if not exist package.json (
   echo [FEHLER] package.json fehlt. Script muss im Projektroot liegen.
   pause & exit /b 1
@@ -28,5 +27,4 @@ if not exist "%VENV%" (
 start "ws-simulator" cmd /k ""%VENV%" "%PY%" ^& echo. ^& echo [INFO] Wenn Fehler: hier kopieren. ^& pause"
 start "vite-dev" cmd /k "npm run dev -- --port 5173 --open ^& echo. ^& pause"
 
-echo [INFO] gestartet. Wenn ein Fenster sofort schliesst, ist dort ein Fehlertext.
-pause
+
