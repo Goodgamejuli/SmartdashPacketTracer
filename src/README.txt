@@ -2,10 +2,7 @@
 
 Dieses Projekt visualisiert Smart-Home-Netzwerkverkehr als Topologie. 
 Das Frontend empfängt Traffic über WebSocket und rendert die Pakete live.
-
-Das Frontend + der Paket Simulator lassen sich via start_windows.bat / start_linux.sh starten.
-
-Um das Projekt starten zu können, müssen jedoch zuerst folgende Dependencies installiert werden:
+Um das Projekt starten zu können, müssen zuerst folgende Dependencies installiert werden:
 
 
 ---------------------------------------------------------------------------------------------------
@@ -33,13 +30,11 @@ python3 -m pip install --upgrade pip && \
 python3 -m pip install websockets==16.0
 
 
-# Das Frontend + der Paket Simulator lassen sich nun via start_windows.bat / start_linux.sh starten
-
-
 ---------------------------------------------------------------------------------------------------
 
 
 Ordnerstruktur
+
 
 
 src/

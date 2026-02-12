@@ -9,22 +9,30 @@ if not exist package.json (
 
 set "SIM=src\sim\Localhost"
 set "PY=%SIM%\smartdash_transfer_ws.py"
-set "VENV=%SIM%\.venv\Scripts\python.exe"
+set "REQ=%SIM%\requirements.txt"
+set "VENV_PY=%SIM%\.venv\Scripts\python.exe"
+
+echo.
+echo [INFO] ROOT: %cd%
+echo [INFO] PY  : %PY%
+echo.
 
 if not exist "%PY%" (
   echo [FEHLER] Nicht gefunden: %PY%
   pause & exit /b 1
 )
 
-if not exist "%VENV%" (
-  echo [FEHLER] Venv fehlt: %VENV%
-  echo        Einmal manuell ausfuehren:
-  echo        py -3 -m venv "%SIM%\.venv"
-  echo        "%SIM%\.venv\Scripts\python.exe" -m pip install -r "%SIM%\requirements.txt"
+if not exist "%REQ%" (
+  echo [FEHLER] Nicht gefunden: %REQ%
   pause & exit /b 1
 )
 
-start "ws-simulator" cmd /k ""%VENV%" "%PY%" ^& echo. ^& echo [INFO] Wenn Fehler: hier kopieren. ^& pause"
+REM venv fehlt -> automatisch erstellen + deps installieren
+if not exist "%VENV_PY%" (
+  echo [INFO] .venv fehlt. Erzeuge venv und installiere Abhaengigkeiten...
+  py -3 -m venv "%SIM%\.venv" || (echo [FEHLER] venv Erstellung fehlgeschlagen. && pause && exit /b 1)
+  "%VENV_PY%" -m pip install -r "%REQ%" || (echo [FEHLER] pip install fehlgeschlagen. && pause && exit /b 1)
+)
+
+start "ws-simulator" cmd /k ""%VENV_PY%" "%PY%" ^& echo. ^& echo [INFO] Wenn Fehler: hier kopieren. ^& pause"
 start "vite-dev" cmd /k "npm run dev -- --port 5173 --open ^& echo. ^& pause"
-
-
