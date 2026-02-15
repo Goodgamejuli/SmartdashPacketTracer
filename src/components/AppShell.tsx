@@ -18,7 +18,7 @@ const AppShell: React.FC = () => {
     //const WS_URL = `ws://${window.location.hostname}:8765/packets`;
     const wsOverride = new URLSearchParams(window.location.search).get('ws');
     const host = window.location.hostname === 'localhost' ? '127.0.0.1' : window.location.hostname;
-    const WS_URL = wsOverride ?? `ws://${host}:8766/packets`;
+    const WS_URL = wsOverride ?? `ws://${host}:8765/packets`;
 
     const connect = () => {
       if (stopped) return;
