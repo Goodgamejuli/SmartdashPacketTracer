@@ -1,164 +1,69 @@
 #!/usr/bin/env python3
-"""
-ws_tap_proxy.py
-
-WebSocket-Proxy zum Mitloggen des Datenverkehrs.
-Die Ausgabe zeigt die Rohdaten so, wie sie tatsächlich als Textframe über WebSocket laufen.
-
-Rollen:
-- Downstream: SmartDash UI verbindet zu diesem Proxy.
-- Upstream: Proxy verbindet zum eigentlichen Simulator-Server.
-
-Standard:
-- Proxy lauscht auf: ws://127.0.0.1:8766/packets
-- Proxy verbindet zu: ws://127.0.0.1:8765/packets
-
-Hinweis:
-- Der Proxy verändert keine Payload.
-- Der Proxy druckt jede Nachricht 1:1 als RAW-String.
-
-Konfiguration per ENV:
-- LISTEN_HOST (default 127.0.0.1)
-- LISTEN_PORT (default 8766)
-- UPSTREAM_URL (default ws://127.0.0.1:8765/packets)
-"""
-
 import asyncio
 import os
+import sys
 from datetime import datetime
 
 import websockets
+from websockets.server import WebSocketServerProtocol
 
-try:
-    from websockets.server import WebSocketServerProtocol
-except Exception:
-    WebSocketServerProtocol = object  # type: ignore
-
-
-ALLOWED_PATHS = {"/packets", "/"}
-
+LISTEN_HOST = os.getenv("LISTEN_HOST", "127.0.0.1").strip()
+LISTEN_PORT = int(os.getenv("LISTEN_PORT", "8766").strip())
+UPSTREAM_URL = os.getenv("UPSTREAM_URL", "ws://127.0.0.1:8765/packets").strip()
+PATH = os.getenv("WS_PATH", "/packets").strip()
 
 def ts() -> str:
     return datetime.now().strftime("%H:%M:%S.%f")[:-3]
 
-
-def to_text(msg) -> str:
-    if isinstance(msg, bytes):
-        try:
-            return msg.decode("utf-8", errors="replace")
-        except Exception:
-            return repr(msg)
-    return str(msg)
-
-
-class ProxyState:
-    def __init__(self, upstream_url: str):
-        self.upstream_url = upstream_url
-        self.upstream = None
-        self.upstream_send_lock = asyncio.Lock()
-
-        self.clients: set[WebSocketServerProtocol] = set()
-        self.clients_lock = asyncio.Lock()
-
-        self.stop = asyncio.Event()
-
-    async def connect_upstream_loop(self):
-        while not self.stop.is_set():
-            try:
-                print(f"[{ts()}] UPSTREAM connect -> {self.upstream_url}")
-                async with websockets.connect(self.upstream_url) as up:
-                    self.upstream = up
-                    print(f"[{ts()}] UPSTREAM connected")
-
-                    async for msg in up:
-                        raw = to_text(msg)
-                        print(f"[{ts()}] RAW upstream->ui: {raw}")
-
-                        # broadcast an alle Clients
-                        async with self.clients_lock:
-                            clients = list(self.clients)
-
-                        if not clients:
-                            continue
-
-                        dead = []
-                        for c in clients:
-                            try:
-                                await c.send(msg)
-                            except Exception:
-                                dead.append(c)
-
-                        if dead:
-                            async with self.clients_lock:
-                                for d in dead:
-                                    self.clients.discard(d)
-
-            except Exception as e:
-                self.upstream = None
-                print(f"[{ts()}] UPSTREAM disconnected ({e}). retry in 2s")
-                await asyncio.sleep(2)
-
-    async def send_to_upstream(self, msg):
-        up = self.upstream
-        if up is None:
-            print(f"[{ts()}] RAW ui->upstream: (drop, upstream offline)")
-            return
-        async with self.upstream_send_lock:
-            await up.send(msg)
-
-
-async def downstream_handler(ws: WebSocketServerProtocol, path: str, state: ProxyState):
-    if path not in ALLOWED_PATHS:
-        await ws.close(code=1008, reason="Unsupported path, use /packets")
+def log(direction: str, payload):
+    # 1:1 anzeigen: Text unverändert ausgeben
+    if isinstance(payload, bytes):
+        print(f"{ts()} {direction} <binary {len(payload)} bytes>")
+        sys.stdout.flush()
         return
+    print(f"{ts()} {direction} {payload}")
+    sys.stdout.flush()
 
-    async with state.clients_lock:
-        state.clients.add(ws)
+async def relay(src, dst, direction: str):
+    async for msg in src:
+        log(direction, msg)
+        await dst.send(msg)
 
-    print(f"[{ts()}] UI connected on {path} (clients={len(state.clients)})")
+async def handler(client):
+    # 1) UI-Connect sichtbar machen
+    try:
+        req_path = getattr(client, "path", None) or "<unknown>"
+    except Exception:
+        req_path = "<unknown>"
+
+    print(f"{ts()} [CONNECT] UI connected, path={req_path}", flush=True)
 
     try:
-        async for msg in ws:
-            raw = to_text(msg)
-            print(f"[{ts()}] RAW ui->upstream: {raw}")
-            try:
-                await state.send_to_upstream(msg)
-            except Exception as e:
-                print(f"[{ts()}] ui->upstream forward failed: {e}")
+        # 2) Upstream-Connect sichtbar machen
+        async with websockets.connect(UPSTREAM_URL) as upstream:
+            print(f"{ts()} [CONNECT] upstream connected -> {UPSTREAM_URL}", flush=True)
+
+            t1 = asyncio.create_task(relay(upstream, client, "[UPSTREAM→UI]"))
+            t2 = asyncio.create_task(relay(client, upstream, "[UI→UPSTREAM]"))
+
+            done, pending = await asyncio.wait({t1, t2}, return_when=asyncio.FIRST_EXCEPTION)
+            for p in pending:
+                p.cancel()
 
     except Exception as e:
-        print(f"[{ts()}] UI disconnected ({e})")
+        print(f"{ts()} [ERROR] handler failed: {e!r}", flush=True)
     finally:
-        async with state.clients_lock:
-            state.clients.discard(ws)
-        print(f"[{ts()}] UI closed (clients={len(state.clients)})")
-
+        print(f"{ts()} [CLOSE] UI disconnected", flush=True)
 
 async def main():
-    listen_host = os.getenv("LISTEN_HOST", "127.0.0.1")
-    listen_port = int(os.getenv("LISTEN_PORT", "8766"))
-    upstream_url = os.getenv("UPSTREAM_URL", "ws://127.0.0.1:8765/packets")
-
-    state = ProxyState(upstream_url)
-
-    print(f"[{ts()}] PROXY listen  -> ws://{listen_host}:{listen_port}/packets")
-    print(f"[{ts()}] PROXY upstream-> {upstream_url}")
-
-    upstream_task = asyncio.create_task(state.connect_upstream_loop())
-
-    async def handler(ws, path="/"):
-        return await downstream_handler(ws, path, state)
-
-    try:
-        async with websockets.serve(handler, listen_host, listen_port):
-            await asyncio.Future()
-    finally:
-        state.stop.set()
-        upstream_task.cancel()
-
+    print(f"🟣 TapProxy LISTEN  ws://{LISTEN_HOST}:{LISTEN_PORT}{PATH}")
+    print(f"🟢 Upstream CONNECT {UPSTREAM_URL}")
+    print(f"{ts()} [READY] waiting for UI connections...", flush=True)
+    async with websockets.serve(handler, LISTEN_HOST, LISTEN_PORT):
+        await asyncio.Future()
 
 if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        print(f"\n[{ts()}] PROXY stopped")
+        print("\n[INFO] TapProxy beendet.")
