@@ -1,5 +1,5 @@
 @echo off
-setlocal
+setlocal EnableExtensions
 cd /d "%~dp0"
 
 if not exist package.json (
@@ -9,8 +9,7 @@ if not exist package.json (
 
 set "SIM=src\sim\Localhost"
 set "PY=%SIM%\smartdash_transfer_ws.py"
-set "REQ=%SIM%\requirements.txt"
-set "VENV_PY=%SIM%\.venv\Scripts\python.exe"
+set "REQ=requirements.txt"
 
 echo.
 echo [INFO] ROOT: %cd%
@@ -22,17 +21,32 @@ if not exist "%PY%" (
   pause & exit /b 1
 )
 
-if not exist "%REQ%" (
-  echo [FEHLER] Nicht gefunden: %REQ%
+REM Python Launcher finden
+set "PYLAUNCH="
+py -3 -V >nul 2>nul && set "PYLAUNCH=py -3"
+if "%PYLAUNCH%"=="" (
+  python -V >nul 2>nul && set "PYLAUNCH=python"
+)
+
+if "%PYLAUNCH%"=="" (
+  echo [FEHLER] Python nicht gefunden.
   pause & exit /b 1
 )
 
-REM venv fehlt -> automatisch erstellen + deps installieren
-if not exist "%VENV_PY%" (
-  echo [INFO] .venv fehlt. Erzeuge venv und installiere Abhaengigkeiten...
-  py -3 -m venv "%SIM%\.venv" || (echo [FEHLER] venv Erstellung fehlgeschlagen. && pause && exit /b 1)
-  "%VENV_PY%" -m pip install -r "%REQ%" || (echo [FEHLER] pip install fehlgeschlagen. && pause && exit /b 1)
+REM Dependencies installieren (global/user)
+if exist "%REQ%" (
+  echo [INFO] Installiere Python deps aus %REQ% ...
+  %PYLAUNCH% -m pip install -r "%REQ%" || (echo [FEHLER] pip install fehlgeschlagen. && pause && exit /b 1)
+) else (
+  echo [WARN] requirements.txt fehlt im Root. Installiere Minimal-Abhaengigkeit websockets ...
+  %PYLAUNCH% -m pip install websockets || (echo [FEHLER] pip install websockets fehlgeschlagen. && pause && exit /b 1)
 )
 
-start "ws-simulator" cmd /k ""%VENV_PY%" "%PY%" ^& echo. ^& echo [INFO] Wenn Fehler: hier kopieren. ^& pause"
-start "vite-dev" cmd /k "npm run dev -- --port 5173 --open ^& echo. ^& pause"
+start "ws-simulator" cmd /k ^
+"cd /d ""%SIM%"" ^& ^
+%PYLAUNCH% -u ""smartdash_transfer_ws.py"" ^& echo. ^& pause"
+
+start "vite-dev" cmd /k ^
+"npm install ^& npm run dev -- --port 5173 --open ^& echo. ^& pause"
+
+endlocal
