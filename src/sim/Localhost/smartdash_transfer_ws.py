@@ -155,46 +155,46 @@ def _default_alarm_alert(code: str, message: str, severity: str = "warn") -> dic
 
 
 # =========================
-# ROUTES 
+# ROUTES --- DESIGN ---
 # =========================
 ROUTES: list[RouteRuntime] = [
         RouteRuntime(
         route_id=1,
         name="Bosch Funksteckdose -> Bosch Server",
         hops=[
-            Hop("Bosch Funksteckdose", "Bosch Smart Home Controller", "ZigBee", edge_travel_ms=3500, ttl_ms=5200),
-            Hop("Bosch Smart Home Controller", "PoE-Switch", "Ethernet", edge_travel_ms=4000),
-            Hop("PoE-Switch", "Bosch Server", "Ethernet", edge_travel_ms=4000),
+            Hop("Bosch Funksteckdose", "Bosch Smart Home Controller", "ZigBee", edge_travel_ms=2000, ttl_ms=10200),
+            Hop("Bosch Smart Home Controller", "PoE-Switch", "Ethernet", edge_travel_ms=2000),
+            Hop("PoE-Switch", "Bosch Server", "Ethernet", edge_travel_ms=2000),
         ],
         steps=[
             StatusStep("bosch.funksteckdose.status"),
         ],
-        packet_gap_ms=400,
+        packet_gap_ms=400, 
     ),
     RouteRuntime(
         route_id=2,
         name="Bosch Wassersensor -> Bosch Server",
         hops=[
-            Hop("Bosch Wassersensor", "Bosch Smart Home Controller", "ZigBee", edge_travel_ms=3500, ttl_ms=5200),
-            Hop("Bosch Smart Home Controller", "PoE-Switch", "Ethernet", edge_travel_ms=4000),
-            Hop("PoE-Switch", "Bosch Server", "Ethernet", edge_travel_ms=4000),
+            Hop("Bosch Wassersensor", "Bosch Smart Home Controller", "ZigBee", edge_travel_ms=2000, ttl_ms=10200),
+            Hop("Bosch Smart Home Controller", "PoE-Switch", "Ethernet", edge_travel_ms=2000),
+            Hop("PoE-Switch", "Bosch Server", "Ethernet", edge_travel_ms=2000),
         ],
         steps=[
             StatusStep("bosch.wassersensor.status"),
-            StatusStep("bosch.wassersensor.alarm", alert=_default_alarm_alert("BOSCH_WASSER_ALARM", "Wassersensor meldet Leckage.", "error")),
+            StatusStep("bosch.wassersensor.alarm"),
         ],
         packet_gap_ms=400,
     ),
-    RouteRuntime(
+    RouteRuntime( #BLE Protokoll funktioniert noch nicht
         route_id=3,
         name="Garmin Watch -> Fritzbox",
         hops=[
-            Hop("abus_lock", "Pixel 7a", "Bluetooth Low Energy", edge_travel_ms=6000, ttl_ms=6500),
-            Hop("Pixel 7a", "fritzbox", "WLAN", edge_travel_ms=6000),
+            Hop("abus_lock", "Pixel 7a", "Bluetooth Low Energy", edge_travel_ms=2000, ttl_ms=10500),
+            Hop("Pixel 7a", "fritzbox", "WLAN", edge_travel_ms=2000),
         ],
         steps=[
             StatusStep("bosch.wassersensor.status"),
-            StatusStep("bosch.wassersensor.alarm", alert=_default_alarm_alert("BOSCH_WASSER_ALARM", "Wassersensor meldet Leckage.", "error")),
+            StatusStep("bosch.wassersensor.alarm"),
         ],
         packet_gap_ms=400,
     ),
@@ -202,8 +202,8 @@ ROUTES: list[RouteRuntime] = [
         route_id=4,
         name="Garmin Watch -> Fritzbox",
         hops=[
-            Hop("hama_camera", "wifi_hub", "WLAN", edge_travel_ms=6000, ttl_ms=6500),
-            Hop("wifi_hub", "fritzbox", "Ethernet", edge_travel_ms=6000, ttl_ms=6500),
+            Hop("hama_camera", "wifi_hub", "WLAN", edge_travel_ms=3000, ttl_ms=6500),
+            Hop("wifi_hub", "fritzbox", "Ethernet", edge_travel_ms=3000, ttl_ms=6500),
         ],
         steps=[
             StatusStep("bosch.wassersensor.status"),
@@ -217,7 +217,7 @@ ROUTES: list[RouteRuntime] = [
 export const PROTOCOL_WLAN: Protocol = 'WLAN';
 export const PROTOCOL_ZIGBEE: Protocol = 'ZigBee';
 export const PROTOCOL_HOMEMATIC_PROPRIETARY: Protocol = 'Homematic Proprietary (ZigBee)';
-export const PROTOCOL_BLE: Protocol = 'Bluetooth Low Energy';
+export const PROTOCOL_BLE: Protocol = 'Bluetooth Low Energy'; --- noch nicht funktional ---
 export const PROTOCOL_DECT: Protocol = 'DECT';
 export const PROTOCOL_ETHERNET: Protocol = 'Ethernet';
 """
@@ -254,7 +254,6 @@ def make_packet(*, hop: Hop, packet_id: str, ttl_ms_to_send: int | None) -> dict
 
     return {"type": "packet", "packet": packet}
 
-
 def make_packet_with_route(
     *,
     hop: Hop,
@@ -286,7 +285,6 @@ def make_packet_with_route(
         payload["alert"] = step.alert
 
     return msg
-
 
 async def send_one_packet_sequence(ws, route: RouteRuntime, packet_id: str, step: StatusStep, idx: int, total: int):
     ttl_for_first_hop = ROUTE_TTL_MS
@@ -335,15 +333,10 @@ async def loop_route_sender(ws, route: RouteRuntime):
     except Exception as e:
         print(f"{ts()} [ROUTE-END r{route.route_id}] {e!r}", flush=True)
 
-
 # =========================
-# ROUTE CONTROLBEREICH
+# ROUTE CONTROLBEREICH --- Status umschalten ---
 # =========================
 class RouteControl:
-    """
-    Zugriff von innen: Route-Status setzen.
-    Kein next/auto/index mehr.
-    """
     def __init__(self, route_by_id: dict[int, RouteRuntime]):
         self.routes = route_by_id
 
@@ -359,47 +352,60 @@ class RouteControl:
             return False
         return r.set_step_by_status(status)
 
-
 async def demo_control_loop(rc: RouteControl, ws):
-    """
-    Demo: führt Befehle der Reihe nach aus.
-    Jeder Befehl setzt explizit einen Status auf einer Route.
-    """
-
-    # Reihenfolge der Testbefehle:
-    # (route_id, status_string)
-    COMMANDS: list[tuple[int, str]] = [
-        (2, "bosch.wassersensor.status"),
-        (2, "bosch.wassersensor.alarm"),
-        (2, "bosch.wassersensor.status"),
-
-        # Route 1 hat nur einen Status, bleibt konstant (trotzdem zum Test)
-        (1, "bosch.funksteckdose.status"),
-
-        # Passe diese an, sobald du Route 3/4 eigene Steps gibst
-        (3, "bosch.wassersensor.status"),
-        (3, "bosch.wassersensor.alarm"),
-        (4, "bosch.wassersensor.status"),
-        (4, "bosch.wassersensor.alarm"),
-    ]
-
-    i = 0
     try:
         while True:
-            route_id, status = COMMANDS[i]
-            i = (i + 1) % len(COMMANDS)
 
-            ok = rc.set_status(route_id, status)
-            await send_obj(
-                ws,
-                make_log(f"[DEMO] cmd=route.setStatus routeId={route_id} status={status} ok={ok}", "info"),
-            )
+            # --------------------------
+            # Route 1 (nur 1 Status)
+            # --------------------------
+            ok = rc.set_status(1, "bosch.funksteckdose.status")          
+            await asyncio.sleep(DEMO_COMMAND_EVERY_S)
 
+
+            # --------------------------
+            # Route 2 normal
+            # --------------------------
+            ok = rc.set_status(2, "bosch.wassersensor.status")
+            await asyncio.sleep(DEMO_COMMAND_EVERY_S)
+
+
+            # --------------------------
+            # Route 2 Alarm
+            # --------------------------
+            ok = rc.set_status(2, "bosch.wassersensor.alarm")
+            await asyncio.sleep(DEMO_COMMAND_EVERY_S)
+
+
+            # --------------------------
+            # Route 3 normal
+            # --------------------------
+            ok = rc.set_status(3, "bosch.wassersensor.status")
+            await asyncio.sleep(DEMO_COMMAND_EVERY_S)
+
+
+            # --------------------------
+            # Route 3 Alarm
+            # --------------------------
+            ok = rc.set_status(3, "bosch.wassersensor.alarm")
+            await asyncio.sleep(DEMO_COMMAND_EVERY_S)
+
+
+            # --------------------------
+            # Route 4 normal
+            # --------------------------
+            ok = rc.set_status(4, "bosch.wassersensor.status")
+            await asyncio.sleep(DEMO_COMMAND_EVERY_S)
+
+
+            # --------------------------
+            # Route 4 Alarm
+            # --------------------------
+            ok = rc.set_status(4, "bosch.wassersensor.alarm")
             await asyncio.sleep(DEMO_COMMAND_EVERY_S)
 
     except asyncio.CancelledError:
         return
-
 
 async def loop_fun_logs(ws):
     lines = [
