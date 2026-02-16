@@ -1,4 +1,4 @@
-import React, { type CSSProperties, useEffect, useMemo, useState } from 'react';
+import React, { type CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
 import { BaseEdge, EdgeLabelRenderer, getBezierPath, type EdgeProps } from '@xyflow/react';
 
 import type { Protocol } from '../model/schema';
@@ -19,6 +19,34 @@ type PacketStyle = CSSProperties & {
 const PACKET_ICON_PX = 34;
 const TICK_MS = 100;
 const MAX_FLIGHTS_VISIBLE = 12;
+
+const EDGE_HOVER_STROKE_PX = 22;
+
+function payloadToLines(payload: unknown): string[] {
+  if (payload === null || payload === undefined) return ['keine Daten'];
+
+  if (typeof payload === 'string' || typeof payload === 'number' || typeof payload === 'boolean') {
+    return [String(payload)];
+  }
+
+  if (Array.isArray(payload)) {
+    if (payload.length === 0) return ['keine Daten'];
+    return [JSON.stringify(payload)];
+  }
+
+  if (typeof payload === 'object') {
+    const entries = Object.entries(payload as Record<string, unknown>);
+    if (entries.length === 0) return ['keine Daten'];
+
+    return entries.map(([k, v]) => {
+      if (v === null || v === undefined) return `${k}:`;
+      if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') return `${k}: ${String(v)}`;
+      return `${k}: ${JSON.stringify(v)}`;
+    });
+  }
+
+  return ['keine Daten'];
+}
 
 const ProtocolEdge: React.FC<EdgeProps> = (props) => {
   const { id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, style, data, selected } = props;
@@ -49,7 +77,6 @@ const ProtocolEdge: React.FC<EdgeProps> = (props) => {
   const safePath = useMemo(() => edgePath.replaceAll("'", "\\'"), [edgePath]);
   const label = (protocol && PROTOCOL_META[protocol]?.label) ?? protocol ?? '';
 
-  // WICHTIG: Flight ist nur aktiv bis min(HopEnde, TTL-Ende)
   const activeFlights = useMemo(() => {
     return flights.filter((f) => {
       const ttlEndAt =
@@ -70,6 +97,39 @@ const ProtocolEdge: React.FC<EdgeProps> = (props) => {
     stroke: selected ? '#dc2626' : baseColor,
     strokeWidth: selected ? 4 : hasPacket ? 4 : 2,
     strokeDasharray: hasPacket ? '6 4' : undefined,
+  };
+
+  const [edgeHover, setEdgeHover] = useState(false);
+  const [popoverHover, setPopoverHover] = useState(false);
+  const closeTimer = useRef<number | null>(null);
+
+  const newestActiveFlight = useMemo(() => {
+    if (activeFlights.length === 0) return null;
+    const sorted = [...activeFlights].sort((a, b) => b.startedAt - a.startedAt);
+    return sorted[0];
+  }, [activeFlights]);
+
+  const payload = useMemo(() => {
+    if (!newestActiveFlight) return null;
+    const anyF = newestActiveFlight as any;
+    return anyF.payload ?? anyF.packet?.payload ?? null;
+  }, [newestActiveFlight]);
+
+  const payloadLines = useMemo(() => payloadToLines(payload), [payload]);
+
+  const showPopover = (edgeHover || popoverHover) && newestActiveFlight !== null;
+
+  const openEdgeHover = () => {
+    if (closeTimer.current) window.clearTimeout(closeTimer.current);
+    closeTimer.current = null;
+    setEdgeHover(true);
+  };
+
+  const closeEdgeHoverDelayed = () => {
+    if (closeTimer.current) window.clearTimeout(closeTimer.current);
+    closeTimer.current = window.setTimeout(() => {
+      setEdgeHover(false);
+    }, 120);
   };
 
   return (
@@ -96,7 +156,19 @@ const ProtocolEdge: React.FC<EdgeProps> = (props) => {
         markerEnd={undefined}
       />
 
+      {/* Hover-Hitfläche für die Kante */}
+      <path
+        d={edgePath}
+        fill="none"
+        stroke="transparent"
+        strokeWidth={EDGE_HOVER_STROKE_PX}
+        style={{ pointerEvents: 'stroke' }}
+        onMouseEnter={openEdgeHover}
+        onMouseLeave={closeEdgeHoverDelayed}
+      />
+
       <EdgeLabelRenderer>
+        {/* Label bleibt wie bisher */}
         <div
           style={{
             position: 'absolute',
@@ -111,10 +183,10 @@ const ProtocolEdge: React.FC<EdgeProps> = (props) => {
           )}
         </div>
 
+        {/* Paketicons bleiben wie bisher */}
         {visibleFlights.map((f) => {
           const duration = Math.max(10, Math.round(f.durationMs));
 
-          // negative delay => re-render startet nicht wieder bei 0%
           const elapsed = Math.max(0, now - f.startedAt);
           const delay = -Math.min(elapsed, duration - 1);
 
@@ -134,8 +206,6 @@ const ProtocolEdge: React.FC<EdgeProps> = (props) => {
             animation: `${duration}ms linear 1 packet-move`,
             animationDelay: `${delay}ms`,
             animationDirection: f.direction === 'backward' ? 'reverse' : 'normal',
-
-            // ok, weil wir aktivFlights hart begrenzen bis Hop-Ende/TTL-Ende
             animationFillMode: 'forwards',
 
             filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.55))',
@@ -187,6 +257,42 @@ const ProtocolEdge: React.FC<EdgeProps> = (props) => {
             </div>
           );
         })}
+
+        {/* Popover an der Label-Position, also dort wo auch dein Delete-Icon sitzt */}
+        {showPopover && (
+          <div
+            style={{
+              position: 'absolute',
+              left: labelX,
+              top: labelY - 10,
+              transform: 'translate(-50%, -100%)',
+              zIndex: 9999,
+              width: 340,
+              maxWidth: '70vw',
+              background: 'white',
+              border: '1px solid rgba(0,0,0,0.16)',
+              borderRadius: 12,
+              boxShadow: '0 12px 28px rgba(0,0,0,0.18)',
+              padding: 10,
+              fontSize: 12,
+              pointerEvents: 'auto',
+            }}
+            onMouseEnter={() => {
+              if (closeTimer.current) window.clearTimeout(closeTimer.current);
+              closeTimer.current = null;
+              setPopoverHover(true);
+            }}
+            onMouseLeave={() => {
+              setPopoverHover(false);
+              closeEdgeHoverDelayed();
+            }}
+          >
+            <div style={{ fontWeight: 800, color: '#111827' }}>Payload der Pakete auf dieser Kante:</div>
+            <div style={{ marginTop: 6, whiteSpace: 'pre-wrap', color: '#111827', lineHeight: 1.35 }}>
+              {payloadLines.join('\n')}
+            </div>
+          </div>
+        )}
       </EdgeLabelRenderer>
     </>
   );

@@ -718,10 +718,10 @@ const TopologyCanvasContent: React.FC = () => {
         onNodeDragStop={onNodeDragStop}
         onNodeClick={onNodeClick}
         onEdgeClick={onEdgeClick}
-        onPaneClick={onPaneClick}
+        onPaneClick={() => globalThis.dispatchEvent(new CustomEvent('sd:close-edge-inspector'))}
         onInit={setRf}
         nodeTypes={nodeTypes}
-        edgeTypes={edgeTypes}
+        edgeTypes={edgeTypes}        
         proOptions={{ hideAttribution: true }}
         noPanClassName="nopan"
         noDragClassName="nodrag"
