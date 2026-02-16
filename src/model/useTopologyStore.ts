@@ -52,6 +52,8 @@ export type FlightEvent = {
   id: string;
   packetId?: string;
 
+  payload?: unknown;
+
   edgeId: string;
   startedAt: number;
 
@@ -111,8 +113,8 @@ const DEAD_PACKET_RETENTION_MS = 60_000;
 
 // Idee: Flight wird VOR Animationsende entfernt => er kann nicht am Node parken.
 // Größerer Wert => verschwindet früher (glatter, aber evtl. "kürzer sichtbar").
+const REMOVE_BEFORE_ANIM_END_MS = 3000; // statt 2000
 
-const REMOVE_BEFORE_ANIM_END_MS = 2000; 
 
 const updateSequenceSeed = (candidate: string | undefined) => {
   if (!candidate) return;
@@ -191,6 +193,7 @@ type State = {
     durationMs?: number;
     ttlMs?: number; // optional: nur beim „Start“ sinnvoll
     packetId?: string; // wichtig für TTL carry-over
+    payload?: unknown;
   }) => void;
 
   ingestPacket: (packet: PacketLike) => void;
@@ -327,10 +330,12 @@ export const useTopologyStore = create<State>((set, get) => ({
   setUpdateRateMs: (ms) => set({ updateRateMs: Math.max(10, Math.round(ms)) }),
   setPacketTravelMs: (ms) => set({ packetTravelMs: Math.max(10, Math.round(ms)) }),
 
-  startFlight: ({ edgeId, sourceDeviceId, targetDeviceId, direction, durationMs, ttlMs, packetId }) => {
+  startFlight: ({ edgeId, sourceDeviceId, targetDeviceId, direction, durationMs, ttlMs, packetId, payload }) => {
     const now = Date.now();
     const d = Math.max(10, Math.round(durationMs ?? get().packetTravelMs));
     const pid = normalizePacketId(packetId);
+
+    
 
     // 0) Wenn TTL schon abgelaufen war -> niemals wiederbeleben
     if (pid && isDeadPacketId(pid, now)) return;
@@ -404,6 +409,7 @@ export const useTopologyStore = create<State>((set, get) => ({
     const flight: FlightEvent = {
       id: nextId(),
       packetId: pid,
+      payload,
       edgeId,
       startedAt: now,
       durationMs: d,
@@ -419,16 +425,13 @@ export const useTopologyStore = create<State>((set, get) => ({
       return { flightsByEdgeId: { ...s.flightsByEdgeId, [edgeId]: next } };
     });
 
-    // 3) VISUAL CLEANUP 
-    // Bedingung ist NICHT "TTL <= 0", sondern:
-    // => Flight verschwindet, wenn Hop-Ende erreicht ODER TTL-Ende erreicht (was früher kommt).
-    const msUntilTtlEnd = Math.max(0, expiresAt - Date.now());
+    // 3) VISUAL CLEANUP: genau am Ende der Animation entfernen (Node erreicht)
+    const endAt = now + d;
 
-    // früher als Animationsende löschen:
-    const msUntilHopDisappear = Math.max(10, d - Math.max(0, REMOVE_BEFORE_ANIM_END_MS));
+    // optional: falls TTL früher endet, dann TTL-Ende nehmen
+    const removeAt = Math.min(endAt, expiresAt);
 
-    // entscheidend: min(HopDisappear, TTL-Ende)
-    const removeAfter = Math.max(10, Math.min(msUntilHopDisappear, msUntilTtlEnd));
+    const removeAfter = Math.max(10, removeAt - Date.now());
 
     window.setTimeout(() => {
       set((s) => {
@@ -483,6 +486,8 @@ export const useTopologyStore = create<State>((set, get) => ({
 
     const direction: 'forward' | 'backward' = edge.source === srcId ? 'forward' : 'backward';
 
+    const payload = (packet as any)?.payload;
+
     get().startFlight({
       edgeId: edge.id,
       sourceDeviceId: srcId,
@@ -491,6 +496,8 @@ export const useTopologyStore = create<State>((set, get) => ({
       durationMs,
       ttlMs,
       packetId: pid,
+
+      payload,
     });
   },
 

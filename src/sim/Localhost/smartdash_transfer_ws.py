@@ -24,6 +24,7 @@ import time
 from dataclasses import dataclass
 from datetime import datetime
 
+
 import websockets
 
 
@@ -37,34 +38,60 @@ ALLOWED_PATHS = {"/packets", "/"}
 # ==========================================
 # TIMING SETTINGS
 # ==========================================
-ROUTE_GAP_MS = 0
-OVERLAP_MS = 1800
+OVERLAP_MS = 120
 SEND_LOG_EVERY_MS = 3000
-ROUTE_TTL_MS = 9000
+ROUTE_TTL_MS = 9000 # default wenn nicht spezifiziert
+
+# Demo: alle 2s Paket-Status ändern
+DEMO_COMMAND_EVERY_S = 2.0
 
 
 # =========================
-# RAW LOGGING (TapProxy-Style)
+# RAW LOGGING
 # =========================
 def ts() -> str:
     return datetime.now().strftime("%H:%M:%S.%f")[:-3]
 
+
 def raw_log(direction: str, payload):
-    # 1:1 anzeigen: Text unverändert ausgeben
     if isinstance(payload, bytes):
         print(f"{ts()} {direction} <binary {len(payload)} bytes>", flush=True)
         return
     print(f"{ts()} {direction} {payload}", flush=True)
 
+
 async def send_text(ws, text: str):
     raw_log("[SIM→UI]", text)
-    await ws.send(text)
+
+    lock = getattr(ws, "sd_send_lock", None)
+    if lock is None:
+        await ws.send(text)
+        return
+
+    async with lock:
+        await ws.send(text)
+
 
 async def send_obj(ws, obj: dict):
     msg = json.dumps(obj, ensure_ascii=False)
     await send_text(ws, msg)
 
 
+def iso_now() -> str:
+    return datetime.utcnow().isoformat(timespec="seconds") + "Z"
+
+
+def make_log(text: str, level: str = "info") -> dict:
+    return {"type": "log", "level": level, "text": text}
+
+
+def make_config(update_rate_ms: int) -> dict:
+    return {"type": "config", "updateRateMs": update_rate_ms}
+
+
+# =========================
+# DATA MODEL
+# =========================
 @dataclass(frozen=True)
 class Hop:
     src: str
@@ -74,76 +101,304 @@ class Hop:
     ttl_ms: int | None = None
 
 
+@dataclass(frozen=True)
+class StatusStep:
+    """
+    Ein Step in der Route: status + optionaler alert.
+    """
+    status: str
+    alert: dict | None = None
+
+
+@dataclass
+@dataclass
+class RouteRuntime:
+    """
+    Route = hops + steps + runtime state.
+    Status wird NUR per Befehl gesetzt (kein Auto-Switch).
+    """
+    route_id: int
+    name: str
+
+    hops: list[Hop]
+    steps: list[StatusStep]
+
+    # Paketfrequenz: Pause NACH einem End-to-End Paket
+    packet_gap_ms: int = 400
+
+    # runtime
+    step_index: int = 0
+
+    def snapshot(self) -> tuple[StatusStep, int, int]:
+        if not self.steps:
+            return (StatusStep(status=""), 0, 0)
+
+        total = len(self.steps)
+        idx = 0 if total == 1 else (self.step_index % total)
+        return (self.steps[idx], idx, total)
+
+    def set_step_by_status(self, status: str) -> bool:
+        s = (status or "").strip()
+        if not s or not self.steps:
+            return False
+
+        for i, st in enumerate(self.steps):
+            if st.status == s:
+                self.step_index = i
+                return True
+
+        return False
+
+
+def _default_alarm_alert(code: str, message: str, severity: str = "warn") -> dict:
+    return {"kind": "alarm", "severity": severity, "code": code, "message": message}
+
+
 # =========================
-# ROUTE (HIER ANPASSEN)
+# ROUTES 
 # =========================
-ROUTE_HOPS: list[Hop] = [
-    Hop("Bosch Bewegungssensor", "Bosch Smart Home Controller", "ZigBee", edge_travel_ms=4000, ttl_ms=5200),
-    Hop("Bosch Smart Home Controller", "PoE-Switch", "Ethernet", edge_travel_ms=4000),
-    Hop("PoE-Switch", "fritzbox", "Ethernet", edge_travel_ms=4000),
+ROUTES: list[RouteRuntime] = [
+        RouteRuntime(
+        route_id=1,
+        name="Bosch Funksteckdose -> Bosch Server",
+        hops=[
+            Hop("Bosch Funksteckdose", "Bosch Smart Home Controller", "ZigBee", edge_travel_ms=3500, ttl_ms=5200),
+            Hop("Bosch Smart Home Controller", "PoE-Switch", "Ethernet", edge_travel_ms=4000),
+            Hop("PoE-Switch", "Bosch Server", "Ethernet", edge_travel_ms=4000),
+        ],
+        steps=[
+            StatusStep("bosch.funksteckdose.status"),
+        ],
+        packet_gap_ms=400,
+    ),
+    RouteRuntime(
+        route_id=2,
+        name="Bosch Wassersensor -> Bosch Server",
+        hops=[
+            Hop("Bosch Wassersensor", "Bosch Smart Home Controller", "ZigBee", edge_travel_ms=3500, ttl_ms=5200),
+            Hop("Bosch Smart Home Controller", "PoE-Switch", "Ethernet", edge_travel_ms=4000),
+            Hop("PoE-Switch", "Bosch Server", "Ethernet", edge_travel_ms=4000),
+        ],
+        steps=[
+            StatusStep("bosch.wassersensor.status"),
+            StatusStep("bosch.wassersensor.alarm", alert=_default_alarm_alert("BOSCH_WASSER_ALARM", "Wassersensor meldet Leckage.", "error")),
+        ],
+        packet_gap_ms=400,
+    ),
+    RouteRuntime(
+        route_id=3,
+        name="Garmin Watch -> Fritzbox",
+        hops=[
+            Hop("abus_lock", "Pixel 7a", "Bluetooth Low Energy", edge_travel_ms=6000, ttl_ms=6500),
+            Hop("Pixel 7a", "fritzbox", "WLAN", edge_travel_ms=6000),
+        ],
+        steps=[
+            StatusStep("bosch.wassersensor.status"),
+            StatusStep("bosch.wassersensor.alarm", alert=_default_alarm_alert("BOSCH_WASSER_ALARM", "Wassersensor meldet Leckage.", "error")),
+        ],
+        packet_gap_ms=400,
+    ),
+    RouteRuntime(
+        route_id=4,
+        name="Garmin Watch -> Fritzbox",
+        hops=[
+            Hop("hama_camera", "wifi_hub", "WLAN", edge_travel_ms=6000, ttl_ms=6500),
+            Hop("wifi_hub", "fritzbox", "Ethernet", edge_travel_ms=6000, ttl_ms=6500),
+        ],
+        steps=[
+            StatusStep("bosch.wassersensor.status"),
+            StatusStep("bosch.wassersensor.alarm", alert=_default_alarm_alert("BOSCH_WASSER_ALARM", "Wassersensor meldet Leckage.", "error")),
+        ],
+        packet_gap_ms=400,
+    ),
 ]
 
+""" Protokollübersicht für Routen
+export const PROTOCOL_WLAN: Protocol = 'WLAN';
+export const PROTOCOL_ZIGBEE: Protocol = 'ZigBee';
+export const PROTOCOL_HOMEMATIC_PROPRIETARY: Protocol = 'Homematic Proprietary (ZigBee)';
+export const PROTOCOL_BLE: Protocol = 'Bluetooth Low Energy';
+export const PROTOCOL_DECT: Protocol = 'DECT';
+export const PROTOCOL_ETHERNET: Protocol = 'Ethernet';
+"""
 
-def iso_now() -> str:
-    return datetime.utcnow().isoformat(timespec="seconds") + "Z"
 
-def make_log(text: str, level: str = "info") -> dict:
-    return {"type": "log", "level": level, "text": text}
+ROUTE_BY_ID: dict[int, RouteRuntime] = {r.route_id: r for r in ROUTES}
 
-def make_config(update_rate_ms: int) -> dict:
-    return {"type": "config", "updateRateMs": update_rate_ms}
 
+# =========================
+# PACKET BUILD
+# =========================
 def make_packet(*, hop: Hop, packet_id: str, ttl_ms_to_send: int | None) -> dict:
     packet: dict = {
         "timestamp": iso_now(),
         "sourceDeviceId": hop.src,
         "targetDeviceId": hop.dst,
+
+        # kompatibel zu PacketLike-Parser (beides wird akzeptiert)
+        "source": hop.src,
+        "target": hop.dst,
+
         "protocol": hop.protocol,
         "edgeTravelMs": hop.edge_travel_ms,
+        "durationMs": hop.edge_travel_ms,
+
         "packetId": packet_id,
         "messageType": "transfer_ws_server",
+
         "payload": {"story": "Sim läuft hop-by-hop durchs Netzwerk."},
     }
+
     if ttl_ms_to_send is not None:
         packet["ttlMs"] = int(ttl_ms_to_send)
+
     return {"type": "packet", "packet": packet}
 
 
-async def loop_route_sender(ws):
-    if not ROUTE_HOPS:
-        await send_obj(ws, make_log("ROUTE_HOPS ist leer – keine Packets werden gesendet.", "warn"))
+def make_packet_with_route(
+    *,
+    hop: Hop,
+    packet_id: str,
+    ttl_ms_to_send: int | None,
+    route: RouteRuntime,
+    step: StatusStep,
+    step_index: int,
+    step_total: int,
+) -> dict:
+    msg = make_packet(hop=hop, packet_id=packet_id, ttl_ms_to_send=ttl_ms_to_send)
+    packet = msg.get("packet")
+
+    if not isinstance(packet, dict):
+        return msg
+
+    payload = packet.get("payload")
+    if not isinstance(payload, dict):
+        payload = {}
+        packet["payload"] = payload
+
+    payload["routeId"] = int(route.route_id)
+    payload["routeName"] = route.name
+    payload["status"] = str(step.status)
+    payload["statusIndex"] = int(step_index)
+    payload["statusTotal"] = int(step_total)
+
+    if step.alert is not None:
+        payload["alert"] = step.alert
+
+    return msg
+
+
+async def send_one_packet_sequence(ws, route: RouteRuntime, packet_id: str, step: StatusStep, idx: int, total: int):
+    ttl_for_first_hop = ROUTE_TTL_MS
+
+    for i, hop in enumerate(route.hops):
+        if hop.ttl_ms is not None:
+            ttl_to_send = hop.ttl_ms
+        elif i == 0:
+            ttl_to_send = ttl_for_first_hop
+        else:
+            ttl_to_send = None
+
+        await send_obj(
+            ws,
+            make_packet_with_route(
+                hop=hop,
+                packet_id=packet_id,
+                ttl_ms_to_send=ttl_to_send,
+                route=route,
+                step=step,
+                step_index=idx,
+                step_total=total,
+            ),
+        )
+        await asyncio.sleep(max(0, hop.edge_travel_ms) / 1000)
+
+async def loop_route_sender(ws, route: RouteRuntime):
+    if not route.hops:
+        await send_obj(ws, make_log(f"Route {route.route_id} hat keine Hops – keine Packets.", "warn"))
         return
 
-    await send_obj(ws, make_log("🚚 Starte Route-Sender (TTL carry-over via packetId).", "success"))
-    await send_obj(ws, make_config(ROUTE_HOPS[0].edge_travel_ms))
+    await send_obj(ws, make_log(f"🚚 Starte Route-Sender {route.route_id}.", "success"))
 
-    route_counter = 0
-
+    seq = 0
     try:
         while True:
-            route_counter += 1
-            packet_id = f"sim-{int(time.time()*1000)}-{route_counter}"
+            seq += 1
+            packet_id = f"sim-r{route.route_id}-{int(time.time()*1000)}-{seq}"
 
-            ttl_for_first_hop = ROUTE_TTL_MS
+            step, idx, total = route.snapshot()
+            await send_one_packet_sequence(ws, route, packet_id, step, idx, total)
 
-            for i, hop in enumerate(ROUTE_HOPS):
-                if hop.ttl_ms is not None:
-                    ttl_to_send = hop.ttl_ms
-                elif i == 0:
-                    ttl_to_send = ttl_for_first_hop
-                else:
-                    ttl_to_send = None
-
-                await send_obj(ws, make_packet(hop=hop, packet_id=packet_id, ttl_ms_to_send=ttl_to_send))
-
-                sleep_ms = max(0, hop.edge_travel_ms - OVERLAP_MS)
-                await asyncio.sleep(sleep_ms / 1000)
-
-            if ROUTE_GAP_MS > 0:
-                await asyncio.sleep(ROUTE_GAP_MS / 1000)
+            gap_ms = max(10, int(route.packet_gap_ms))
+            await asyncio.sleep(gap_ms / 1000)
 
     except Exception as e:
-        print(f"{ts()} [ROUTE-END] {e!r}", flush=True)
+        print(f"{ts()} [ROUTE-END r{route.route_id}] {e!r}", flush=True)
+
+
+# =========================
+# ROUTE CONTROLBEREICH
+# =========================
+class RouteControl:
+    """
+    Zugriff von innen: Route-Status setzen.
+    Kein next/auto/index mehr.
+    """
+    def __init__(self, route_by_id: dict[int, RouteRuntime]):
+        self.routes = route_by_id
+
+    def _get(self, route_id: int) -> RouteRuntime | None:
+        try:
+            return self.routes.get(int(route_id))
+        except Exception:
+            return None
+
+    def set_status(self, route_id: int, status: str) -> bool:
+        r = self._get(route_id)
+        if not r:
+            return False
+        return r.set_step_by_status(status)
+
+
+async def demo_control_loop(rc: RouteControl, ws):
+    """
+    Demo: führt Befehle der Reihe nach aus.
+    Jeder Befehl setzt explizit einen Status auf einer Route.
+    """
+
+    # Reihenfolge der Testbefehle:
+    # (route_id, status_string)
+    COMMANDS: list[tuple[int, str]] = [
+        (2, "bosch.wassersensor.status"),
+        (2, "bosch.wassersensor.alarm"),
+        (2, "bosch.wassersensor.status"),
+
+        # Route 1 hat nur einen Status, bleibt konstant (trotzdem zum Test)
+        (1, "bosch.funksteckdose.status"),
+
+        # Passe diese an, sobald du Route 3/4 eigene Steps gibst
+        (3, "bosch.wassersensor.status"),
+        (3, "bosch.wassersensor.alarm"),
+        (4, "bosch.wassersensor.status"),
+        (4, "bosch.wassersensor.alarm"),
+    ]
+
+    i = 0
+    try:
+        while True:
+            route_id, status = COMMANDS[i]
+            i = (i + 1) % len(COMMANDS)
+
+            ok = rc.set_status(route_id, status)
+            await send_obj(
+                ws,
+                make_log(f"[DEMO] cmd=route.setStatus routeId={route_id} status={status} ok={ok}", "info"),
+            )
+
+            await asyncio.sleep(DEMO_COMMAND_EVERY_S)
+
+    except asyncio.CancelledError:
+        return
 
 
 async def loop_fun_logs(ws):
@@ -160,18 +415,8 @@ async def loop_fun_logs(ws):
         while True:
             await send_obj(ws, make_log(random.choice(lines), "info"))
             await asyncio.sleep(SEND_LOG_EVERY_MS / 1000)
-
     except Exception as e:
         print(f"{ts()} [LOG-END] {e!r}", flush=True)
-
-
-async def recv_logger(ws):
-    # UI sendet oft nichts. Falls doch, siehst du es hier 1:1.
-    try:
-        async for msg in ws:
-            raw_log("[UI→SIM]", msg)
-    except Exception as e:
-        print(f"{ts()} [RECV-END] {e!r}", flush=True)
 
 
 async def handler(ws):
@@ -187,14 +432,23 @@ async def handler(ws):
 
     await send_obj(ws, make_log(f"✅ UI verbunden auf {path}.", "success"))
 
-    recv_task = asyncio.create_task(recv_logger(ws))
+    ws.sd_send_lock = asyncio.Lock()
+
+    # Config: erstes hop travel als baseline
+    first_hop_ms = ROUTES[0].hops[0].edge_travel_ms if ROUTES and ROUTES[0].hops else 120
+    await send_obj(ws, make_config(first_hop_ms))
+
+    rc = RouteControl(ROUTE_BY_ID)
+
+    demo_task = asyncio.create_task(demo_control_loop(rc, ws))
+    route_tasks = [asyncio.create_task(loop_route_sender(ws, r)) for r in ROUTES]
+
     try:
-        await asyncio.gather(
-            loop_route_sender(ws),
-            loop_fun_logs(ws),
-        )
+        await asyncio.gather(loop_fun_logs(ws), *route_tasks)
     finally:
-        recv_task.cancel()
+        demo_task.cancel()
+        for t in route_tasks:
+            t.cancel()
         print(f"{ts()} [CLOSE] UI disconnected, peer={peer}", flush=True)
 
 

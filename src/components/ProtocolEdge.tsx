@@ -186,9 +186,15 @@ const ProtocolEdge: React.FC<EdgeProps> = (props) => {
         {/* Paketicons bleiben wie bisher */}
         {visibleFlights.map((f) => {
           const duration = Math.max(10, Math.round(f.durationMs));
-
           const elapsed = Math.max(0, now - f.startedAt);
-          const delay = -Math.min(elapsed, duration - 1);
+
+          // Fortschritt exakt clampen
+          let t = elapsed / duration;
+          if (t >= 1) return null; // Node erreicht => NICHT rendern
+          if (t < 0) t = 0;
+
+          // Richtung berücksichtigen
+          if (f.direction === 'backward') t = 1 - t;
 
           const ttlEndAt =
             f.packetId && expiresAtByPacketId[f.packetId] ? expiresAtByPacketId[f.packetId] : f.expiresAt;
@@ -203,16 +209,12 @@ const ProtocolEdge: React.FC<EdgeProps> = (props) => {
             top: 0,
             pointerEvents: 'none',
 
-            animation: `${duration}ms linear 1 packet-move`,
-            animationDelay: `${delay}ms`,
-            animationDirection: f.direction === 'backward' ? 'reverse' : 'normal',
-            animationFillMode: 'forwards',
+            // Keine Animation mehr => keine "forwards"-Parkposition am Node
+            offsetPath: `path('${safePath}')`,
+            offsetDistance: `${t * 100}%`,
+            offsetRotate: '0deg',
 
             filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.55))',
-
-            offsetDistance: '0%',
-            offsetRotate: '0deg',
-            offsetPath: `path('${safePath}')`,
           };
 
           return (
