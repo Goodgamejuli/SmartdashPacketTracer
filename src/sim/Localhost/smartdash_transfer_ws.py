@@ -162,9 +162,9 @@ ROUTES: list[RouteRuntime] = [
         route_id=1,
         name="Bosch Funksteckdose -> Bosch Server",
         hops=[
-            Hop("Bosch Funksteckdose", "Bosch Smart Home Controller", "ZigBee", edge_travel_ms=2000, ttl_ms=10200),
-            Hop("Bosch Smart Home Controller", "PoE-Switch", "Ethernet", edge_travel_ms=2000),
-            Hop("PoE-Switch", "Bosch Server", "Ethernet", edge_travel_ms=2000),
+            Hop("Bosch Funksteckdose", "Bosch Smart Home Controller", "ZigBee", edge_travel_ms=1600, ttl_ms=10200),
+            Hop("Bosch Smart Home Controller", "PoE-Switch", "Ethernet", edge_travel_ms=1600),
+            Hop("PoE-Switch", "Bosch Server", "Ethernet", edge_travel_ms=1600),
         ],
         steps=[
             StatusStep("bosch.funksteckdose.status"),
@@ -175,9 +175,9 @@ ROUTES: list[RouteRuntime] = [
         route_id=2,
         name="Bosch Wassersensor -> Bosch Server",
         hops=[
-            Hop("Bosch Wassersensor", "Bosch Smart Home Controller", "ZigBee", edge_travel_ms=2000, ttl_ms=10200),
-            Hop("Bosch Smart Home Controller", "PoE-Switch", "Ethernet", edge_travel_ms=2000),
-            Hop("PoE-Switch", "Bosch Server", "Ethernet", edge_travel_ms=2000),
+            Hop("Bosch Wassersensor", "Bosch Smart Home Controller", "ZigBee", edge_travel_ms=1600, ttl_ms=10200),
+            Hop("Bosch Smart Home Controller", "PoE-Switch", "Ethernet", edge_travel_ms=1600),
+            Hop("PoE-Switch", "Bosch Server", "Ethernet", edge_travel_ms=1600),
         ],
         steps=[
             StatusStep("bosch.wassersensor.status"),
@@ -189,8 +189,8 @@ ROUTES: list[RouteRuntime] = [
         route_id=3,
         name="Garmin Watch -> Fritzbox",
         hops=[
-            Hop("abus_lock", "Pixel 7a", "Bluetooth Low Energy", edge_travel_ms=2000, ttl_ms=10500),
-            Hop("Pixel 7a", "fritzbox", "WLAN", edge_travel_ms=2000),
+            Hop("abus_lock", "Pixel 7a", "Bluetooth Low Energy", edge_travel_ms=1600, ttl_ms=10500),
+            Hop("Pixel 7a", "fritzbox", "WLAN", edge_travel_ms=1600),
         ],
         steps=[
             StatusStep("bosch.wassersensor.status"),
@@ -207,7 +207,7 @@ ROUTES: list[RouteRuntime] = [
         ],
         steps=[
             StatusStep("bosch.wassersensor.status"),
-            StatusStep("bosch.wassersensor.alarm", alert=_default_alarm_alert("BOSCH_WASSER_ALARM", "Wassersensor meldet Leckage.", "error")),
+            StatusStep("bosch.wassersensor.alarm"),
         ],
         packet_gap_ms=400,
     ),
