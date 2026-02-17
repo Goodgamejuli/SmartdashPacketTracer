@@ -245,8 +245,6 @@ def make_packet(*, hop: Hop, packet_id: str, ttl_ms_to_send: int | None) -> dict
 
         "packetId": packet_id,
         "messageType": "transfer_ws_server",
-
-        "payload": {"story": "Sim läuft hop-by-hop durchs Netzwerk."},
     }
 
     if ttl_ms_to_send is not None:

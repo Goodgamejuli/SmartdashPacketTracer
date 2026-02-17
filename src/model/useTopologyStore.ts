@@ -153,6 +153,9 @@ type State = {
   devices: Device[];
   edges: Edge[];
   logs: LogEntry[];
+  routeStatusById: Record<number, string>;
+  routeNameById: Record<number, string>;
+
 
   flightsByEdgeId: Record<string, FlightEvent[]>;
 
@@ -204,6 +207,9 @@ export const useTopologyStore = create<State>((set, get) => ({
   devices: [],
   edges: [],
   logs: [],
+  routeStatusById: {},
+  routeNameById: {},
+
 
   flightsByEdgeId: {},
   expiresAtByPacketId: {},
@@ -487,6 +493,26 @@ export const useTopologyStore = create<State>((set, get) => ({
     const direction: 'forward' | 'backward' = edge.source === srcId ? 'forward' : 'backward';
 
     const payload = (packet as any)?.payload;
+
+        // Route-Status global merken (damit bestehende Flights sofort den neuen Status anzeigen)
+    if (payload && typeof payload === 'object') {
+      const ridRaw = (payload as any).routeId;
+      const statusRaw = (payload as any).status;
+      const rnameRaw = (payload as any).routeName;
+
+      const rid = typeof ridRaw === 'number' ? ridRaw : Number(ridRaw);
+      const status = typeof statusRaw === 'string' ? statusRaw : '';
+      const rname = typeof rnameRaw === 'string' ? rnameRaw : '';
+
+      if (Number.isFinite(rid) && rid > 0) {
+        if (status) {
+          set((s) => ({ routeStatusById: { ...s.routeStatusById, [rid]: status } }));
+        }
+        if (rname) {
+          set((s) => ({ routeNameById: { ...s.routeNameById, [rid]: rname } }));
+        }
+      }
+    }
 
     get().startFlight({
       edgeId: edge.id,

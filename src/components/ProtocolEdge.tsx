@@ -59,6 +59,10 @@ const ProtocolEdge: React.FC<EdgeProps> = (props) => {
 
   const expiresAtByPacketId = useTopologyStore((s) => s.expiresAtByPacketId);
 
+  const routeStatusById = useTopologyStore((s) => s.routeStatusById);
+  const routeNameById = useTopologyStore((s) => s.routeNameById);
+
+
   const d = (data ?? {}) as ProtocolEdgeData;
   const protocol = d.protocol;
   const flights = Array.isArray(d.flights) ? d.flights : [];
@@ -101,23 +105,39 @@ const ProtocolEdge: React.FC<EdgeProps> = (props) => {
 
   const [edgeHover, setEdgeHover] = useState(false);
   const [popoverHover, setPopoverHover] = useState(false);
+  useEffect(() => {
+  if (!edgeHover) setPopoverHover(false);
+  }, [edgeHover]);
+
+  useEffect(() => {
+    if (activeFlights.length === 0) setPopoverHover(false);
+  }, [activeFlights.length]);
+
   const closeTimer = useRef<number | null>(null);
 
-  const newestActiveFlight = useMemo(() => {
-    if (activeFlights.length === 0) return null;
-    const sorted = [...activeFlights].sort((a, b) => b.startedAt - a.startedAt);
-    return sorted[0];
-  }, [activeFlights]);
+    const routesOnEdge = useMemo(() => {
+    const map = new Map<number, { routeId: number; routeName: string; status: string; count: number }>();
 
-  const payload = useMemo(() => {
-    if (!newestActiveFlight) return null;
-    const anyF = newestActiveFlight as any;
-    return anyF.payload ?? anyF.packet?.payload ?? null;
-  }, [newestActiveFlight]);
+    for (const f of activeFlights) {
+      const p = (f as any)?.payload;
+      if (!p || typeof p !== 'object') continue;
 
-  const payloadLines = useMemo(() => payloadToLines(payload), [payload]);
+      const ridRaw = (p as any).routeId;
+      const rid = typeof ridRaw === 'number' ? ridRaw : Number(ridRaw);
+      if (!Number.isFinite(rid) || rid <= 0) continue;
 
-  const showPopover = (edgeHover || popoverHover) && newestActiveFlight !== null;
+      const routeName = String(routeNameById[rid] ?? (p as any).routeName ?? `Route ${rid}`);
+      const status = String(routeStatusById[rid] ?? (p as any).status ?? '');
+
+      const existing = map.get(rid);
+      if (existing) existing.count += 1;
+      else map.set(rid, { routeId: rid, routeName, status, count: 1 });
+    }
+
+    return Array.from(map.values()).sort((a, b) => a.routeId - b.routeId);
+  }, [activeFlights, routeNameById, routeStatusById]);
+
+  const showPopover = (edgeHover || popoverHover) && routesOnEdge.length > 0;
 
   const openEdgeHover = () => {
     if (closeTimer.current) window.clearTimeout(closeTimer.current);
@@ -289,9 +309,27 @@ const ProtocolEdge: React.FC<EdgeProps> = (props) => {
               closeEdgeHoverDelayed();
             }}
           >
-            <div style={{ fontWeight: 800, color: '#111827' }}>Payload der Pakete auf dieser Kante:</div>
-            <div style={{ marginTop: 6, whiteSpace: 'pre-wrap', color: '#111827', lineHeight: 1.35 }}>
-              {payloadLines.join('\n')}
+            <div style={{ fontWeight: 800, color: '#111827' }}>Pakete auf dieser Kante (pro Route):</div>
+
+            <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {routesOnEdge.map((r) => (
+                <div
+                  key={r.routeId}
+                  style={{
+                    border: '1px solid rgba(0,0,0,0.10)',
+                    borderRadius: 10,
+                    padding: 8,
+                    background: '#fff',
+                  }}
+                >
+                  <div style={{ fontWeight: 800, color: '#111827' }}>
+                    {r.routeName} <span style={{ fontWeight: 700, color: '#6b7280' }}>×{r.count}</span>
+                  </div>
+                  <div style={{ marginTop: 4, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 12 }}>
+                    {r.status || '—'}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
