@@ -88,6 +88,13 @@ def make_log(text: str, level: str = "info") -> dict:
 def make_config(update_rate_ms: int) -> dict:
     return {"type": "config", "updateRateMs": update_rate_ms}
 
+def make_route_status(route_id: int, status: str) -> dict:
+    return {
+        "type": "routeStatus",
+        "routeId": int(route_id),
+        "status": str(status),
+        "timestamp": iso_now(),
+    }
 
 # =========================
 # DATA MODEL
@@ -351,59 +358,63 @@ class RouteControl:
         return r.set_step_by_status(status)
 
 async def demo_control_loop(rc: RouteControl, ws):
-    try:
+    """
+    Demo: Statuswechsel laufen parallel.
+    Jede Route hat ihren eigenen Loop und schaltet unabhängig um.
+    """
+
+    async def set_and_wait(route_id: int, status: str):
+        ok = rc.set_status(route_id, status)
+
+        # optional: Log (bei Bedarf einkommentieren)
+        # await send_obj(ws, make_log(f"[DEMO] routeId={route_id} status={status} ok={ok}", "info"))
+
+        # optional: Live-Update fürs Frontend (damit bereits laufende Pakete live umschalten)
+        if ok:
+            await send_obj(ws, make_route_status(route_id, status))
+
+        await asyncio.sleep(DEMO_COMMAND_EVERY_S)
+
+    async def loop_route_1():
         while True:
-
-            # --------------------------
             # Route 1 (nur 1 Status)
-            # --------------------------
-            ok = rc.set_status(1, "bosch.funksteckdose.status")          
-            await asyncio.sleep(DEMO_COMMAND_EVERY_S)
+            await set_and_wait(1, "bosch.funksteckdose.status")
 
-
-            # --------------------------
+    async def loop_route_2():
+        while True:
             # Route 2 normal
-            # --------------------------
-            ok = rc.set_status(2, "bosch.wassersensor.status")
-            await asyncio.sleep(DEMO_COMMAND_EVERY_S)
-
-
-            # --------------------------
+            await set_and_wait(2, "bosch.wassersensor.status")
             # Route 2 Alarm
-            # --------------------------
-            ok = rc.set_status(2, "bosch.wassersensor.alarm")
-            await asyncio.sleep(DEMO_COMMAND_EVERY_S)
+            await set_and_wait(2, "bosch.wassersensor.alarm")
 
-
-            # --------------------------
+    async def loop_route_3():
+        while True:
             # Route 3 normal
-            # --------------------------
-            ok = rc.set_status(3, "bosch.wassersensor.status")
-            await asyncio.sleep(DEMO_COMMAND_EVERY_S)
-
-
-            # --------------------------
+            await set_and_wait(3, "bosch.wassersensor.status")
             # Route 3 Alarm
-            # --------------------------
-            ok = rc.set_status(3, "bosch.wassersensor.alarm")
-            await asyncio.sleep(DEMO_COMMAND_EVERY_S)
+            await set_and_wait(3, "bosch.wassersensor.alarm")
 
-
-            # --------------------------
+    async def loop_route_4():
+        while True:
             # Route 4 normal
-            # --------------------------
-            ok = rc.set_status(4, "bosch.wassersensor.status")
-            await asyncio.sleep(DEMO_COMMAND_EVERY_S)
-
-
-            # --------------------------
+            await set_and_wait(4, "bosch.wassersensor.status")
             # Route 4 Alarm
-            # --------------------------
-            ok = rc.set_status(4, "bosch.wassersensor.alarm")
-            await asyncio.sleep(DEMO_COMMAND_EVERY_S)
+            await set_and_wait(4, "bosch.wassersensor.alarm")
 
+    tasks = [
+        asyncio.create_task(loop_route_1()),
+        asyncio.create_task(loop_route_2()),
+        asyncio.create_task(loop_route_3()),
+        asyncio.create_task(loop_route_4()),
+    ]
+
+    try:
+        await asyncio.gather(*tasks)
     except asyncio.CancelledError:
+        for t in tasks:
+            t.cancel()
         return
+
 
 async def loop_fun_logs(ws):
     lines = [
