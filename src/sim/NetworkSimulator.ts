@@ -8,13 +8,10 @@ export type HopPacketMessage = {
   timestamp?: number | string;
   sourceDeviceId: string;
   targetDeviceId: string;
-
+  packetRateMs?: number;
   protocol: unknown;
-
-  edgeTravelMs?: number; // Hop-Animationsdauer
-  ttlMs?: number; // optional: nur beim Start setzen
-  packetId?: string; // optional: für TTL carry-over
-
+  ttlMs?: number; 
+  packetId?: string; 
   messageType?: string;
   payload?: Record<string, unknown>;
 };
@@ -51,13 +48,9 @@ function ingestHopPacket(hop: HopPacketMessage) {
     sourceDeviceId: String(hop.sourceDeviceId ?? '').trim(),
     targetDeviceId: String(hop.targetDeviceId ?? '').trim(),
     protocol: proto,
-
-    edgeTravelMs: hop.edgeTravelMs,
-
-    // TTL/packetId optional (carry-over möglich)
+    packetRateMs: hop.packetRateMs,
     ttlMs: hop.ttlMs,
     packetId: hop.packetId,
-
     messageType: hop.messageType ?? 'hop',
     payload: hop.payload ?? {},
   });
@@ -73,9 +66,9 @@ function parseIncoming(raw: string): unknown[] {
   }
 }
 
-function detectType(obj: UnknownObject): 'log' | 'config' | 'packet' | 'unknown' {
+function detectType(obj: UnknownObject): 'log' | 'config' | 'packet' | 'routeStatus' | 'unknown' {
   const t = obj.type ?? obj.kind ?? obj.event;
-  if (t === 'log' || t === 'config' || t === 'packet') return t;
+  if (t === 'log' || t === 'config' || t === 'packet' || t === 'routeStatus') return t;
 
   if (typeof obj.updateRateMs === 'number') return 'config';
   if (isObject(obj.packet)) return 'packet';
@@ -117,6 +110,21 @@ export function handleSmartdashMessage(raw: string) {
       const env = item as Partial<PacketEnvelope> & UnknownObject;
       const hop = (isObject(env.packet) ? env.packet : env) as HopPacketMessage;
       ingestHopPacket(hop);
+      continue;
+    }
+
+    if (type === 'routeStatus') {
+      const routeId = Number((item as any).routeId);
+      const status = String((item as any).status ?? '');
+
+      if (Number.isFinite(routeId) && routeId > 0) {
+        useTopologyStore.setState((s: any) => ({
+          routeStatusById: {
+            ...(s.routeStatusById ?? {}),
+            [routeId]: status,
+          },
+        }));
+      }
       continue;
     }
 

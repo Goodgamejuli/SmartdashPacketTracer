@@ -40,81 +40,94 @@ export type TopologySnapshot = {
   edges: Edge[];
 };
 
-/**
- * FlightEvent = EIN sichtbares „Paket“ AUF EINER Edge (ein Hop).
- * Ein End-to-End-Paket besteht aus mehreren Flights (Hop für Hop).
- *
- * Wichtig:
- * - packetId verbindet alle Hops desselben Pakets
- * - expiresAt ist die „globale“ TTL für dieses packetId
- */
+//FlightEvent = sichtbares Paket auf Kante
 export type FlightEvent = {
   id: string;
   packetId?: string;
-
   payload?: unknown;
-
   edgeId: string;
   startedAt: number;
-
-  /** Animationsdauer auf dieser Edge */
   durationMs: number;
-
-  /** Globaler Ablaufzeitpunkt für dieses Paket */
   expiresAt: number;
-
   direction: 'forward' | 'backward';
   sourceDeviceId: string;
   targetDeviceId: string;
 };
 
 export type PacketLike = {
-  // flexible Endpoint-Felder
+ 
   source?: string;
   target?: string;
   from?: string;
   to?: string;
   src?: string;
   dst?: string;
-
   sourceDeviceId?: string;
   targetDeviceId?: string;
-
   protocol?: Protocol;
 
-  /** Hop-Animationdauer */
+  //Hop-Animationdauer 
   durationMs?: number;
-  edgeTravelMs?: number;
+  packetRateMs?: number;
 
-  /**
-   * TTL optional:
-   * - Wenn packetId noch NICHT bekannt: initialisiert TTL
-   * - Wenn packetId schon bekannt: wird IGNORIERT 
-   */
   ttlMs?: number;
-
-  /** paketübergreifende ID damit TTL nicht resetet */
   packetId?: string;
-
   timestamp?: number | string;
-
   [key: string]: unknown;
 };
 
 let _id = 0;
 const nextId = () => String(++_id);
 
-// Packet-ID -> Timer für TTL-Ablauf 
 const packetExpiryTimers = new Map<string, number>();
 
-// Wenn TTL abgelaufen ist, dürfen späte Hops derselben packetId NICHT "wiederbeleben"
+const packetProgressById = new Map<string, { lastTargetId: string; nextStartAt: number }>();
+const nextHopStartAtByPacketId = new Map<string, number>();
+
+const BASE_SPEED_PX_PER_S = 240; // zentraler Basiswert: 1.0 => 240 px/s
+const EDGE_SCALE_MIN = 0.35;
+const EDGE_SCALE_MAX = 4.0;
+
+function scaledDurationMs(devs: Device[], srcId: string, dstId: string, baseMs: number): number {
+  const base = Math.max(10, Math.round(baseMs));
+
+  const a = devs.find((x) => x.id === srcId);
+  const b = devs.find((x) => x.id === dstId);
+
+  if (!a || !b) return base;
+
+  const distPx = Math.hypot(a.x - b.x, a.y - b.y);
+  let scale = distPx / SPEED_REF_PX;
+  scale = Math.max(EDGE_SCALE_MIN, Math.min(EDGE_SCALE_MAX, scale));
+
+  return Math.max(10, Math.round(base * scale));
+}
+
+const clampSpeedMultiplier = (m: number): number => {
+  if (!Number.isFinite(m)) return 1;
+  return Math.max(0.05, Math.min(10, m)); 
+};
+
+const edgeDistancePx = (edge: { source: string; target: string }, devices: Device[]): number => {
+  const a = devices.find((d) => d.id === edge.source);
+  const b = devices.find((d) => d.id === edge.target);
+  if (!a || !b) return 200; // Fallback
+  return Math.hypot(a.x - b.x, a.y - b.y);
+};
+
+const durationMsFromSpeed = (distancePx: number, speedMultiplier: number): number => {
+  const m = clampSpeedMultiplier(speedMultiplier);
+  const pxPerS = BASE_SPEED_PX_PER_S * m;
+  const seconds = distancePx / Math.max(1, pxPerS);
+  return Math.max(10, Math.round(seconds * 1000));
+};
+
 const deadPacketIds = new Map<string, number>(); // packetId -> keepUntil
 const DEAD_PACKET_RETENTION_MS = 60_000;
 
-// Idee: Flight wird VOR Animationsende entfernt => er kann nicht am Node parken.
-// Größerer Wert => verschwindet früher (glatter, aber evtl. "kürzer sichtbar").
-const REMOVE_BEFORE_ANIM_END_MS = 3000; // statt 2000
-
+// Idee: Flight kurz vorm Animationsende entfernen für smootheness 
+const REMOVE_BEFORE_ANIM_END_MS = 3000;
+const SPEED_REF_PX = 300;
 
 const updateSequenceSeed = (candidate: string | undefined) => {
   if (!candidate) return;
@@ -155,19 +168,9 @@ type State = {
   logs: LogEntry[];
   routeStatusById: Record<number, string>;
   routeNameById: Record<number, string>;
-
-
   flightsByEdgeId: Record<string, FlightEvent[]>;
-
-  /**
-   * Damit TTL nicht pro Hop resetet:
-   * packetId -> globales expiresAt
-   */
   expiresAtByPacketId: Record<string, number>;
-
   updateRateMs: number;
-
-  // Default-Hop-Dauer, falls kein edgeTravelMs kommt
   packetTravelMs: number;
 
   addDevice: (d: Omit<Device, 'id'>) => Device;
@@ -194,8 +197,9 @@ type State = {
     targetDeviceId: string;
     direction?: 'forward' | 'backward';
     durationMs?: number;
-    ttlMs?: number; // optional: nur beim „Start“ sinnvoll
-    packetId?: string; // wichtig für TTL carry-over
+    ttlMs?: number; 
+    packetId?: string; 
+    startedAt?: number;
     payload?: unknown;
   }) => void;
 
@@ -210,13 +214,10 @@ export const useTopologyStore = create<State>((set, get) => ({
   routeStatusById: {},
   routeNameById: {},
 
-
   flightsByEdgeId: {},
   expiresAtByPacketId: {},
 
   updateRateMs: 120,
-
-  // Default pro Hop (nur falls Packet kein edgeTravelMs liefert)
   packetTravelMs: 140,
 
   addDevice: (d) => {
@@ -269,6 +270,8 @@ export const useTopologyStore = create<State>((set, get) => ({
     for (const t of packetExpiryTimers.values()) window.clearTimeout(t);
     packetExpiryTimers.clear();
     deadPacketIds.clear();
+    nextHopStartAtByPacketId.clear();
+    packetProgressById.clear();
 
     set({
       devices: [],
@@ -324,6 +327,8 @@ export const useTopologyStore = create<State>((set, get) => ({
     for (const t of packetExpiryTimers.values()) window.clearTimeout(t);
     packetExpiryTimers.clear();
     deadPacketIds.clear();
+    nextHopStartAtByPacketId.clear();
+    packetProgressById.clear();
 
     set({
       devices,
@@ -336,20 +341,15 @@ export const useTopologyStore = create<State>((set, get) => ({
   setUpdateRateMs: (ms) => set({ updateRateMs: Math.max(10, Math.round(ms)) }),
   setPacketTravelMs: (ms) => set({ packetTravelMs: Math.max(10, Math.round(ms)) }),
 
-  startFlight: ({ edgeId, sourceDeviceId, targetDeviceId, direction, durationMs, ttlMs, packetId, payload }) => {
+  startFlight: ({ edgeId, sourceDeviceId, targetDeviceId, direction, durationMs, ttlMs, packetId, startedAt, payload }) => {
     const now = Date.now();
-    const d = Math.max(10, Math.round(durationMs ?? get().packetTravelMs));
+    const startAt = typeof startedAt === 'number' ? startedAt : now;
     const pid = normalizePacketId(packetId);
+    const devs = get().devices;
+    const baseMs = durationMs ?? get().packetTravelMs;
+    const d = scaledDurationMs(devs, sourceDeviceId, targetDeviceId, baseMs);
 
-    
-
-    // 0) Wenn TTL schon abgelaufen war -> niemals wiederbeleben
     if (pid && isDeadPacketId(pid, now)) return;
-
-    // 1) TTL-Logik (WICHTIG):
-    // - TTL darf nach jedem Hop NICHT resetten
-    // - expiresAt wird pro packetId EINMAL festgelegt und dann nur noch übernommen
-    // - ttlMs wird NUR berücksichtigt, wenn packetId noch KEIN expiresAt besitzt
     let expiresAt: number;
 
     if (pid) {
@@ -361,24 +361,21 @@ export const useTopologyStore = create<State>((set, get) => ({
         const initialTtl = typeof ttlMs === 'number' ? Math.max(0, Math.round(ttlMs)) : d;
         expiresAt = now + initialTtl;
 
-        // TTL schon 0 -> sofort "dead"
         if (expiresAt <= now) {
           markDeadPacketId(pid);
           return;
         }
 
-        // Mapping setzen
         set((s) => ({
           expiresAtByPacketId: { ...s.expiresAtByPacketId, [pid]: expiresAt },
         }));
 
-        // TTL-Cleanup genau EINMAL planen
+        // TTL-Cleanup 
         const prevTimer = packetExpiryTimers.get(pid);
         if (typeof prevTimer === 'number') window.clearTimeout(prevTimer);
 
         const msUntilExpire = Math.max(0, expiresAt - Date.now());
         const timerId = window.setTimeout(() => {
-          // TTL abgelaufen -> global kill + tombstone (späte Hops schlucken)
           markDeadPacketId(pid);
 
           set((s) => {
@@ -405,19 +402,18 @@ export const useTopologyStore = create<State>((set, get) => ({
         return;
       }
     } else {
-      // Keine packetId => jedes Hop ist „eigenes Paket“
       const t = typeof ttlMs === 'number' ? Math.max(0, Math.round(ttlMs)) : d;
       expiresAt = now + t;
       if (expiresAt <= now) return;
     }
 
-    // 2) Flight erstellen (Hop auf dieser Edge)
+    // Flight erstellen 
     const flight: FlightEvent = {
       id: nextId(),
       packetId: pid,
       payload,
       edgeId,
-      startedAt: now,
+      startedAt: startAt,
       durationMs: d,
       expiresAt,
       direction: direction ?? 'forward',
@@ -431,10 +427,10 @@ export const useTopologyStore = create<State>((set, get) => ({
       return { flightsByEdgeId: { ...s.flightsByEdgeId, [edgeId]: next } };
     });
 
-    // 3) VISUAL CLEANUP: genau am Ende der Animation entfernen (Node erreicht)
-    const endAt = now + d;
+    // Cleanup: genau am Ende der Animation entfernen (Node erreicht)
+    const endAt = startAt + d;
 
-    // optional: falls TTL früher endet, dann TTL-Ende nehmen
+    // falls TTL früher endet, dann TTL-Ende nehmen
     const removeAt = Math.min(endAt, expiresAt);
 
     const removeAfter = Math.max(10, removeAt - Date.now());
@@ -461,20 +457,12 @@ export const useTopologyStore = create<State>((set, get) => ({
 
     const proto = packet.protocol;
 
-    const durationMs =
-      typeof packet.edgeTravelMs === 'number'
-        ? packet.edgeTravelMs
-        : typeof packet.durationMs === 'number'
-          ? packet.durationMs
-          : undefined;
-
     const ttlMs = typeof packet.ttlMs === 'number' ? packet.ttlMs : undefined;
     const pid = normalizePacketId(packet.packetId);
 
-    // (A) Späte Hops nach TTL-Ende werden geschluckt
+    // Späte Hops nach TTL-Ende schlucken
     if (pid && isDeadPacketId(pid, now)) return;
 
-    // (B) Wenn packetId existiert und TTL bereits abgelaufen -> ignorieren
     if (pid) {
       const exp = get().expiresAtByPacketId[pid];
       if (typeof exp === 'number' && now >= exp) {
@@ -487,43 +475,46 @@ export const useTopologyStore = create<State>((set, get) => ({
       if (proto && e.protocol !== proto) return false;
       return (e.source === srcId && e.target === dstId) || (e.source === dstId && e.target === srcId);
     });
-
     if (!edge) return;
 
     const direction: 'forward' | 'backward' = edge.source === srcId ? 'forward' : 'backward';
 
-    const payload = (packet as any)?.payload;
+    const pr = typeof (packet as any).packetRateMs === 'number' ? (packet as any).packetRateMs : undefined;
+    const baseForEdge = typeof pr === 'number' ? pr : get().packetTravelMs;
+    const d = scaledDurationMs(devs, srcId, dstId, baseForEdge);
 
-        // Route-Status global merken (damit bestehende Flights sofort den neuen Status anzeigen)
-    if (payload && typeof payload === 'object') {
-      const ridRaw = (payload as any).routeId;
-      const statusRaw = (payload as any).status;
-      const rnameRaw = (payload as any).routeName;
+    let startedAt: number | undefined;
 
-      const rid = typeof ridRaw === 'number' ? ridRaw : Number(ridRaw);
-      const status = typeof statusRaw === 'string' ? statusRaw : '';
-      const rname = typeof rnameRaw === 'string' ? rnameRaw : '';
+    if (pid) {
+      const prog = packetProgressById.get(pid);
 
-      if (Number.isFinite(rid) && rid > 0) {
-        if (status) {
-          set((s) => ({ routeStatusById: { ...s.routeStatusById, [rid]: status } }));
+      // Erstes Hop eines Pakets: noch kein Progress bekannt
+      if (!prog) {
+        startedAt = now;
+        packetProgressById.set(pid, { lastTargetId: dstId, nextStartAt: now + d });
+      } else {
+        // Echte Weiterleitung: Quelle muss das letzte Ziel sein
+        if (srcId !== prog.lastTargetId) {
+          return; 
         }
-        if (rname) {
-          set((s) => ({ routeNameById: { ...s.routeNameById, [rid]: rname } }));
-        }
+
+        startedAt = Math.max(now, prog.nextStartAt);
+        packetProgressById.set(pid, { lastTargetId: dstId, nextStartAt: startedAt + d });
       }
     }
+
+    const payload = (packet as any)?.payload;
 
     get().startFlight({
       edgeId: edge.id,
       sourceDeviceId: srcId,
       targetDeviceId: dstId,
       direction,
-      durationMs,
+      durationMs: typeof pr === 'number' ? pr : undefined,
       ttlMs,
       packetId: pid,
-
-      payload,
+      startedAt,
+      payload: (packet as any)?.payload,
     });
   },
 
@@ -531,6 +522,8 @@ export const useTopologyStore = create<State>((set, get) => ({
     for (const t of packetExpiryTimers.values()) window.clearTimeout(t);
     packetExpiryTimers.clear();
     deadPacketIds.clear();
+    nextHopStartAtByPacketId.clear();
+    packetProgressById.clear();
 
     set({ flightsByEdgeId: {}, expiresAtByPacketId: {} });
   },

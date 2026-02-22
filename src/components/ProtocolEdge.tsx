@@ -89,7 +89,7 @@ const ProtocolEdge: React.FC<EdgeProps> = (props) => {
       const hopEndAt = f.startedAt + Math.max(10, Math.round(f.durationMs));
       const endAt = Math.min(hopEndAt, ttlEndAt);
 
-      return now < endAt;
+      return now >= f.startedAt && now < endAt;
     });
   }, [flights, expiresAtByPacketId, now]);
 
@@ -188,7 +188,6 @@ const ProtocolEdge: React.FC<EdgeProps> = (props) => {
       />
 
       <EdgeLabelRenderer>
-        {/* Label bleibt wie bisher */}
         <div
           style={{
             position: 'absolute',
@@ -203,33 +202,23 @@ const ProtocolEdge: React.FC<EdgeProps> = (props) => {
           )}
         </div>
 
-        {/* Paketicons bleiben wie bisher */}
         {visibleFlights.map((f) => {
           const duration = Math.max(10, Math.round(f.durationMs));
           const elapsed = Math.max(0, now - f.startedAt);
-
-          // Fortschritt exakt clampen
+          const HOLD_AT_END_MS = 140; 
+          if (elapsed >= duration + HOLD_AT_END_MS) return null;
           let t = elapsed / duration;
-          if (t >= 1) return null; // Node erreicht => NICHT rendern
+          t = Math.min(1, Math.max(0, t));
           if (t < 0) t = 0;
 
           // Richtung berücksichtigen
           if (f.direction === 'backward') t = 1 - t;
-
-          const ttlEndAt =
-            f.packetId && expiresAtByPacketId[f.packetId] ? expiresAtByPacketId[f.packetId] : f.expiresAt;
-
-          const remainingMs = Math.max(0, ttlEndAt - now);
-          const ttlSeconds = remainingMs / 1000;
-          const ttlLabel = ttlSeconds >= 10 ? String(Math.floor(ttlSeconds)) : ttlSeconds.toFixed(1);
 
           const packetStyle: PacketStyle = {
             position: 'absolute',
             left: 0,
             top: 0,
             pointerEvents: 'none',
-
-            // Keine Animation mehr => keine "forwards"-Parkposition am Node
             offsetPath: `path('${safePath}')`,
             offsetDistance: `${t * 100}%`,
             offsetRotate: '0deg',
@@ -254,33 +243,11 @@ const ProtocolEdge: React.FC<EdgeProps> = (props) => {
                   <path d="M5 8l7 5 7-5" fill="none" stroke="#111827" strokeWidth="1.2" strokeLinejoin="round" />
                 </svg>
 
-                <div
-                  style={{
-                    position: 'absolute',
-                    right: -6,
-                    top: -6,
-                    minWidth: 18,
-                    height: 18,
-                    padding: '0 5px',
-                    borderRadius: 999,
-                    background: 'rgba(17,24,39,0.92)',
-                    color: 'white',
-                    fontSize: 10,
-                    fontWeight: 800,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    boxShadow: '0 1px 2px rgba(0,0,0,0.4)',
-                  }}
-                >
-                  {ttlLabel}
-                </div>
               </div>
             </div>
           );
         })}
 
-        {/* Popover an der Label-Position, also dort wo auch dein Delete-Icon sitzt */}
         {showPopover && (
           <div
             style={{

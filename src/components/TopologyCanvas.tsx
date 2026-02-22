@@ -28,8 +28,7 @@ import ProtocolEdge from './ProtocolEdge';
 const nodeTypes = { smartDevice: SmartDeviceNode };
 const edgeTypes = { protocol: ProtocolEdge };
 
-// Drop-Zentrierung: grobe Node-Größe.
-// Falls dein SmartDeviceNode deutlich andere Maße hat: Werte anpassen.
+// Drop-Zentrierung: grobe Node-Größe
 const NODE_W = 180;
 const NODE_H = 84;
 
@@ -37,8 +36,8 @@ type ProtocolKey = Device['protocols'][number];
 
 type ProtocolOption = {
   protocol: ProtocolKey;
-  disabled: boolean; // nur für "create" relevant
-  hint?: string; // rein informativ, nicht zum Deaktivieren im Edit-Modus
+  disabled: boolean; 
+  hint?: string; 
 };
 
 type ProtocolPickerMode = 'create' | 'edit';
@@ -104,7 +103,6 @@ const TopologyCanvasContent: React.FC = () => {
 
   const safeAddLog = useCallback(
     (text: string, level?: any) => {
-      // kompatibel zu addLog(text) und addLog(text, level)
       (addLog as any)(text, level);
     },
     [addLog]
@@ -331,7 +329,7 @@ const TopologyCanvasContent: React.FC = () => {
 
         return {
           protocol,
-          disabled: false, // Edit: niemals blockieren
+          disabled: false, 
           hint: otherId ? 'Existiert bereits. Wird beim Bestätigen zusammengeführt' : undefined,
         };
       });
@@ -563,7 +561,6 @@ const TopologyCanvasContent: React.FC = () => {
     setSelectedEdgeIds(params.edges.map((e) => e.id));
   }, []);
 
-  // Wichtig: nicht preventDefault/stopPropagation, sonst selektiert ReactFlow nicht sauber.
   const onNodeClick = useCallback(
     (event: React.MouseEvent, node: FlowNode) => {
       if (protocolPicker) return;
@@ -618,8 +615,7 @@ const TopologyCanvasContent: React.FC = () => {
     return src.protocols.length >= 2 && tgt.protocols.length >= 2 && shared.length >= 2;
   }, [contextMenu, devices, edgesInStore, sharedProtocolsOf]);
 
-  // Global: Klick ins Leere schließt Kontextmenü (auch bei MiniMap/Controls).
-  // Capture: läuft vor ReactFlow-Interna. Wichtig: nur schließen, wenn außerhalb von Menü/Modal.
+  // Klick ins Leere schließt Kontextmenü (auch bei MiniMap/Controls).
   useEffect(() => {
     const handler = (e: PointerEvent) => {
       const t = e.target as Node | null;
@@ -769,7 +765,6 @@ const TopologyCanvasContent: React.FC = () => {
         </div>
       )}
 
-      {/* Protokoll-Picker Modal */}
       {protocolPicker && (
         <div
           className="absolute inset-0 z-50 flex items-center justify-center bg-black/30 p-4 nopan nodrag"

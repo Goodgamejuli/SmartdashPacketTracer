@@ -9,17 +9,11 @@ if not exist package.json (
 
 set "SIM=src\sim\Localhost"
 set "PY=%SIM%\smartdash_transfer_ws.py"
-set "REQ=requirements.txt"
 
 echo.
 echo [INFO] ROOT: %cd%
 echo [INFO] PY  : %PY%
 echo.
-
-if not exist "%PY%" (
-  echo [FEHLER] Nicht gefunden: %PY%
-  pause & exit /b 1
-)
 
 REM Python Launcher finden
 set "PYLAUNCH="
@@ -33,12 +27,7 @@ if "%PYLAUNCH%"=="" (
   pause & exit /b 1
 )
 
-REM Dependencies installieren (global/user)
-if exist "%REQ%" (
-  echo [INFO] Installiere Python deps aus %REQ% ...
-  %PYLAUNCH% -m pip install -r "%REQ%" || (echo [FEHLER] pip install fehlgeschlagen. && pause && exit /b 1)
-) else (
-  echo [WARN] requirements.txt fehlt im Root. Installiere Minimal-Abhaengigkeit websockets ...
+echo Installiere Minimal-Abhaengigkeit websockets ...
   %PYLAUNCH% -m pip install websockets || (echo [FEHLER] pip install websockets fehlgeschlagen. && pause && exit /b 1)
 )
 
