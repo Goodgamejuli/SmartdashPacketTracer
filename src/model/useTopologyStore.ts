@@ -4,12 +4,9 @@ import type { Protocol } from '../model/schema';
 /** RollingLog kompatibel */
 export type LogLevel = 'info' | 'success' | 'warn' | 'error' | 'wire';
 
-export type LogEntry = {
-  id: string;
-  ts: number;
-  level: LogLevel;
-  text: string;
-};
+export type WsLogLevel = 'info' | 'success' | 'warn' | 'error' | 'wire';
+export type LogEntry = { id: string; ts: number; level: WsLogLevel; text: string };
+const MAX_LOG_ENTRIES = 500;
 
 export type Device = {
   id: string;
@@ -181,7 +178,13 @@ type State = {
 
   updateDevicePosition: (id: string, x: number, y: number) => void;
 
-  addLog: (text: string, level?: LogLevel) => void;
+  isPaused: boolean;
+  pauseEpoch: number; // steigt bei jedem Toggle, praktisch für Reset/Debug
+
+  setPaused: (paused: boolean) => void;
+  togglePaused: () => void;
+
+  addLog: (text: string, level?: WsLogLevel) => void;
   clearLog: () => void;
 
   clearAll: () => void;
@@ -219,6 +222,8 @@ export const useTopologyStore = create<State>((set, get) => ({
 
   updateRateMs: 120,
   packetTravelMs: 140,
+  isPaused: false,
+  pauseEpoch: 0,
 
   addDevice: (d) => {
     const dev: Device = { id: nextId(), ...d };
@@ -262,9 +267,17 @@ export const useTopologyStore = create<State>((set, get) => ({
     set((s) => ({ devices: s.devices.map((d) => (d.id === id ? { ...d, x, y } : d)) })),
 
   addLog: (text, level = 'info') =>
-    set((s) => ({ logs: [...s.logs, { id: nextId(), ts: Date.now(), level, text: String(text) }] })),
-
+  set((s) => {
+    const next = [...s.logs, { id: nextId(), ts: Date.now(), level, text: String(text ?? '') }];
+    return { logs: next.length > MAX_LOG_ENTRIES ? next.slice(-MAX_LOG_ENTRIES) : next };
+  }),
   clearLog: () => set({ logs: [] }),
+
+  setPaused: (paused) =>
+  set((s) => (s.isPaused === paused ? s : { isPaused: paused, pauseEpoch: s.pauseEpoch + 1 })),
+
+  togglePaused: () =>
+  set((s) => ({ isPaused: !s.isPaused, pauseEpoch: s.pauseEpoch + 1 })),
 
   clearAll: () => {
     for (const t of packetExpiryTimers.values()) window.clearTimeout(t);

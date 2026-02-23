@@ -56,6 +56,90 @@ function ingestHopPacket(hop: HopPacketMessage) {
   });
 }
 
+function isPausedNow() {
+  return Boolean((window as any).__smartdashPaused);
+}
+
+let packetQueue: HopPacketMessage[] = [];
+let queueHead = 0;
+let flushScheduled = false;
+
+const MAX_QUEUE = 2000;
+const MAX_INGEST_PER_FRAME = 250;
+
+let droppedWhilePaused = 0;
+let droppedOverflow = 0;
+
+function pendingCount() {
+  return packetQueue.length - queueHead;
+}
+
+function clearQueue(reason: 'paused' | 'flush') {
+  const pending = pendingCount();
+  if (pending <= 0) return;
+
+  if (reason === 'paused') droppedWhilePaused += pending;
+
+  packetQueue = [];
+  queueHead = 0;
+}
+
+function scheduleFlush() {
+  if (flushScheduled) return;
+  flushScheduled = true;
+  requestAnimationFrame(flushPackets);
+}
+
+function flushPackets() {
+  flushScheduled = false;
+
+  if (isPausedNow()) {
+    clearQueue('paused');
+    if (droppedWhilePaused > 0 && droppedWhilePaused % 500 === 0) {
+      logToUi(`Pause aktiv: ${droppedWhilePaused} Packets verworfen.`, 'warn');
+    }
+    return;
+  }
+
+  let processed = 0;
+  while (queueHead < packetQueue.length && processed < MAX_INGEST_PER_FRAME) {
+    ingestHopPacket(packetQueue[queueHead]);
+    queueHead += 1;
+    processed += 1;
+  }
+
+  if (queueHead >= packetQueue.length) {
+    packetQueue = [];
+    queueHead = 0;
+  } else if (queueHead > 1000) {
+    packetQueue = packetQueue.slice(queueHead);
+    queueHead = 0;
+  }
+
+  if (queueHead < packetQueue.length) scheduleFlush();
+}
+
+function enqueueHopPacket(hop: HopPacketMessage) {
+  if (isPausedNow()) {
+    droppedWhilePaused += 1;
+    if (droppedWhilePaused % 500 === 0) {
+      logToUi(`Pause aktiv: ${droppedWhilePaused} Packets verworfen.`, 'warn');
+    }
+    return;
+  }
+
+  if (pendingCount() >= MAX_QUEUE) {
+    droppedOverflow += 1;
+    if (droppedOverflow % 500 === 0) {
+      logToUi(`Queue voll: ${droppedOverflow} Packets verworfen.`, 'warn');
+    }
+    return;
+  }
+
+  packetQueue.push(hop);
+  scheduleFlush();
+}
+
 function parseIncoming(raw: string): unknown[] {
   try {
     const parsed = JSON.parse(raw);
@@ -78,6 +162,29 @@ function detectType(obj: UnknownObject): 'log' | 'config' | 'packet' | 'routeSta
   return 'unknown';
 }
 
+let routeStatusBuf: Record<number, string> = {};
+let routeStatusScheduled = false;
+
+function flushRouteStatus() {
+  routeStatusScheduled = false;
+  const patch = routeStatusBuf;
+  routeStatusBuf = {};
+
+  useTopologyStore.setState((s: any) => ({
+    routeStatusById: {
+      ...(s.routeStatusById ?? {}),
+      ...patch,
+    },
+  }));
+}
+
+function enqueueRouteStatus(routeId: number, status: string) {
+  routeStatusBuf[routeId] = status;
+  if (routeStatusScheduled) return;
+  routeStatusScheduled = true;
+  requestAnimationFrame(flushRouteStatus);
+}
+
 export function handleSmartdashMessage(raw: string) {
   const items = parseIncoming(raw);
   if (items.length === 0) return;
@@ -95,21 +202,10 @@ export function handleSmartdashMessage(raw: string) {
       continue;
     }
 
-    if (type === 'config') {
-      const ms = (item.updateRateMs ?? item['update_rate_ms']) as unknown;
-      if (typeof ms === 'number') {
-        useTopologyStore.getState().setUpdateRateMs(ms);
-        logToUi(`Update-Rate: ${Math.round(ms)}ms`, 'info');
-      } else {
-        logToUi('Config: updateRateMs fehlt', 'warn');
-      }
-      continue;
-    }
-
     if (type === 'packet') {
       const env = item as Partial<PacketEnvelope> & UnknownObject;
       const hop = (isObject(env.packet) ? env.packet : env) as HopPacketMessage;
-      ingestHopPacket(hop);
+      enqueueHopPacket(hop);
       continue;
     }
 
@@ -118,12 +214,7 @@ export function handleSmartdashMessage(raw: string) {
       const status = String((item as any).status ?? '');
 
       if (Number.isFinite(routeId) && routeId > 0) {
-        useTopologyStore.setState((s: any) => ({
-          routeStatusById: {
-            ...(s.routeStatusById ?? {}),
-            [routeId]: status,
-          },
-        }));
+        enqueueRouteStatus(routeId, status);
       }
       continue;
     }

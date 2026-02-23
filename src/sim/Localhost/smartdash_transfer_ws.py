@@ -195,1340 +195,1339 @@ ROUTES: list[RouteRuntime] = [
         packet_frequency_ms=int(random.random() * 6000 + 300)
     ),
 
-    # RouteRuntime(
-    #     route_id=39,
-    #     name="Amazon Server -> Jura 8 Kaffeemaschine",
-    #     hops=[
-    #         Hop("amazon_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+    RouteRuntime(
+        route_id=39,
+        name="Amazon Server -> Jura 8 Kaffeemaschine",
+        hops=[
+            Hop("amazon_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
 
-    #         Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-    #         Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-    #         Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-    #         Hop("fritzbox", "wifi_hub", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("fritzbox", "wifi_hub", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
 
-    #         Hop("wifi_hub", "jura_coffee_machine", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
-    #     ],
-    #     steps=[
-    #         StatusStep("jura.kaffeemaschine.ein_aus"),                   
-    #         StatusStep("jura.kaffeemaschine.ein_aus"),               
-    #         StatusStep("jura.kaffeemaschine.ein_aus"),               
-    #         StatusStep("jura.kaffeemaschine.ein_aus"),               
-    #         StatusStep("jura.kaffeemaschine.ein_aus"),               
-    #         StatusStep("jura.kaffeemaschine.ein_aus")                   
-    #     ],
-    #     packet_frequency_ms=int(random.random() * 6000 + 300)
-    # ),
+            Hop("wifi_hub", "jura_coffee_machine", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[
+            StatusStep("jura.kaffeemaschine.ein_aus"),                   
+            StatusStep("jura.kaffeemaschine.ein_aus"),               
+            StatusStep("jura.kaffeemaschine.ein_aus"),               
+            StatusStep("jura.kaffeemaschine.ein_aus"),               
+            StatusStep("jura.kaffeemaschine.ein_aus"),               
+            StatusStep("jura.kaffeemaschine.ein_aus")                   
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
 
-    # RouteRuntime(
-    #     route_id=40,
-    #     name="Amazon Server -> Roborock 8 Staubsauger",
-    #     hops=[
-    #         Hop("amazon_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+    RouteRuntime(
+        route_id=40,
+        name="Amazon Server -> Roborock 8 Staubsauger",
+        hops=[
+            Hop("amazon_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
 
-    #         Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-    #         Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-    #         Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-    #         Hop("fritzbox", "wifi_hub", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("fritzbox", "wifi_hub", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
 
-    #         Hop("wifi_hub", "roborock_vacuum", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
-    #     ],
-    #     steps=[
-    #         StatusStep("roborock.staubsauger.ein_aus"),                   
-    #         StatusStep("roborock.staubsauger.ein_aus"),               
-    #         StatusStep("roborock.staubsauger.ein_aus"),               
-    #         StatusStep("roborock.staubsauger.ein_aus"),               
-    #         StatusStep("roborock.staubsauger.ein_aus"),               
-    #         StatusStep("roborock.staubsauger.ein_aus")                   
-    #     ],
-    #     packet_frequency_ms=int(random.random() * 6000 + 300)
-    # ),
+            Hop("wifi_hub", "roborock_vacuum", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[
+            StatusStep("roborock.staubsauger.ein_aus"),                   
+            StatusStep("roborock.staubsauger.ein_aus"),               
+            StatusStep("roborock.staubsauger.ein_aus"),               
+            StatusStep("roborock.staubsauger.ein_aus"),               
+            StatusStep("roborock.staubsauger.ein_aus"),               
+            StatusStep("roborock.staubsauger.ein_aus")                   
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
 
-    # RouteRuntime(
-    #     route_id=41,
-    #     name="Vorwerk Server -> Thermomix",
-    #     hops=[
-    #         Hop("vorwerk_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+    RouteRuntime(
+        route_id=41,
+        name="Vorwerk Server -> Thermomix",
+        hops=[
+            Hop("vorwerk_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
 
-    #         Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-    #         Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-    #         Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-    #         Hop("fritzbox", "wifi_hub", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("fritzbox", "wifi_hub", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
 
-    #         Hop("wifi_hub", "thermomix_m6", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
-    #     ],
-    #     steps=[
-    #         StatusStep("vorwerk.thermomix.ein_aus"),                   
-    #         StatusStep("vorwerk.thermomix.ein_aus"),               
-    #         StatusStep("vorwerk.thermomix.ein_aus"),               
-    #         StatusStep("vorwerk.thermomix.ein_aus"),               
-    #         StatusStep("vorwerk.thermomix.ein_aus"),               
-    #         StatusStep("vorwerk.thermomix.ein_aus")                   
-    #     ],
-    #     packet_frequency_ms=int(random.random() * 6000 + 300)
-    # ),
+            Hop("wifi_hub", "thermomix_m6", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[
+            StatusStep("vorwerk.thermomix.ein_aus"),                   
+            StatusStep("vorwerk.thermomix.ein_aus"),               
+            StatusStep("vorwerk.thermomix.ein_aus"),               
+            StatusStep("vorwerk.thermomix.ein_aus"),               
+            StatusStep("vorwerk.thermomix.ein_aus"),               
+            StatusStep("vorwerk.thermomix.ein_aus")                   
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
 
-    # RouteRuntime(
-    #     route_id=42,
-    #     name="Amazon Server -> TP-Link Funksteckdose",
-    #     hops=[
-    #         Hop("amazon_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+    RouteRuntime(
+        route_id=42,
+        name="Amazon Server -> TP-Link Funksteckdose",
+        hops=[
+            Hop("amazon_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
 
-    #         Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-    #         Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-    #         Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-    #         Hop("fritzbox", "wifi_hub", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("fritzbox", "wifi_hub", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
 
-    #         Hop("wifi_hub", "tplink_socket", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
-    #     ],
-    #     steps=[
-    #         StatusStep("tplink.funksteckdose.ein_aus"),                   
-    #         StatusStep("tplink.funksteckdose.ein_aus"),               
-    #         StatusStep("tplink.funksteckdose.ein_aus"),               
-    #         StatusStep("tplink.funksteckdose.ein_aus"),               
-    #         StatusStep("tplink.funksteckdose.ein_aus"),               
-    #         StatusStep("tplink.funksteckdose.ein_aus")                   
-    #     ],
-    #     packet_frequency_ms=int(random.random() * 6000 + 300)
-    # ),
+            Hop("wifi_hub", "tplink_socket", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[
+            StatusStep("tplink.funksteckdose.ein_aus"),                   
+            StatusStep("tplink.funksteckdose.ein_aus"),               
+            StatusStep("tplink.funksteckdose.ein_aus"),               
+            StatusStep("tplink.funksteckdose.ein_aus"),               
+            StatusStep("tplink.funksteckdose.ein_aus"),               
+            StatusStep("tplink.funksteckdose.ein_aus")                   
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
 
-    # RouteRuntime(
-    #     route_id=44,
-    #     name="Amazon Server -> FireTV Sick",
-    #     hops=[
-    #         Hop("amazon_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+    RouteRuntime(
+        route_id=44,
+        name="Amazon Server -> FireTV Sick",
+        hops=[
+            Hop("amazon_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
 
-    #         Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-    #         Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-    #         Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-    #         Hop("fritzbox", "wifi_hub", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("fritzbox", "wifi_hub", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
 
-    #         Hop("wifi_hub", "firetv_stick", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
-    #     ],
-    #     steps=[
-    #         StatusStep("amazon.firetv.audio_video"),                   
-    #         StatusStep("amazon.firetv.audio_video"),               
-    #         StatusStep("amazon.firetv.audio_video"),               
-    #         StatusStep("amazon.firetv.audio_video"),               
-    #         StatusStep("amazon.firetv.audio_video"),               
-    #         StatusStep("amazon.firetv.audio_video")                   
-    #     ],
-    #     packet_frequency_ms=int(random.random() * 6000 + 300)
-    # ),
+            Hop("wifi_hub", "firetv_stick", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[
+            StatusStep("amazon.firetv.audio_video"),                   
+            StatusStep("amazon.firetv.audio_video"),               
+            StatusStep("amazon.firetv.audio_video"),               
+            StatusStep("amazon.firetv.audio_video"),               
+            StatusStep("amazon.firetv.audio_video"),               
+            StatusStep("amazon.firetv.audio_video")                   
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
 
-    # RouteRuntime(
-    #     route_id=45,
-    #     name="Google Server -> Google Chromecast",
-    #     hops=[
-    #         Hop("google_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+    RouteRuntime(
+        route_id=45,
+        name="Google Server -> Google Chromecast",
+        hops=[
+            Hop("google_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
 
-    #         Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-    #         Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-    #         Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-    #         Hop("fritzbox", "wifi_hub", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("fritzbox", "wifi_hub", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
 
-    #         Hop("wifi_hub", "chromecast", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
-    #     ],
-    #     steps=[
-    #         StatusStep("google.chromecast.video_audio"),                   
-    #         StatusStep("google.chromecast.video_audio"),               
-    #         StatusStep("google.chromecast.video_audio"),               
-    #         StatusStep("google.chromecast.video_audio"),               
-    #         StatusStep("google.chromecast.video_audio"),               
-    #         StatusStep("google.chromecast.video_audio")                   
-    #     ],
-    #     packet_frequency_ms=int(random.random() * 6000 + 300)
-    # ),
+            Hop("wifi_hub", "chromecast", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[
+            StatusStep("google.chromecast.video_audio"),                   
+            StatusStep("google.chromecast.video_audio"),               
+            StatusStep("google.chromecast.video_audio"),               
+            StatusStep("google.chromecast.video_audio"),               
+            StatusStep("google.chromecast.video_audio"),               
+            StatusStep("google.chromecast.video_audio")                   
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
 
-    # RouteRuntime(
-    #     route_id=46,
-    #     name="Amazon Server -> Amazon Echo Show Smart Display",
-    #     hops=[
-    #         Hop("amazon_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+    RouteRuntime(
+        route_id=46,
+        name="Amazon Server -> Amazon Echo Show Smart Display",
+        hops=[
+            Hop("amazon_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
 
-    #         Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-    #         Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-    #         Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-    #         Hop("fritzbox", "wifi_hub", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("fritzbox", "wifi_hub", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
 
-    #         Hop("wifi_hub", "smart_display", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
-    #     ],
-    #     steps=[
-    #         StatusStep("amazon.echo.audio_video"),                   
-    #         StatusStep("amazon.echo.audio_video"),               
-    #         StatusStep("amazon.echo.audio_video"),               
-    #         StatusStep("amazon.echo.audio_video"),               
-    #         StatusStep("amazon.echo.audio_video"),               
-    #         StatusStep("amazon.echo.audio_video")                   
-    #     ],
-    #     packet_frequency_ms=int(random.random() * 6000 + 300)
-    # ),
+            Hop("wifi_hub", "smart_display", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[
+            StatusStep("amazon.echo.audio_video"),                   
+            StatusStep("amazon.echo.audio_video"),               
+            StatusStep("amazon.echo.audio_video"),               
+            StatusStep("amazon.echo.audio_video"),               
+            StatusStep("amazon.echo.audio_video"),               
+            StatusStep("amazon.echo.audio_video")                   
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
 
-    # RouteRuntime(
-    #     route_id=47,
-    #     name="Amazon Server -> Levoit Luftreiniger",
-    #     hops=[
-    #         Hop("amazon_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+    RouteRuntime(
+        route_id=47,
+        name="Amazon Server -> Levoit Luftreiniger",
+        hops=[
+            Hop("amazon_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
 
-    #         Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-    #         Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-    #         Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-    #         Hop("fritzbox", "wifi_hub", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("fritzbox", "wifi_hub", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
 
-    #         Hop("wifi_hub", "levoit_air_purifier", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
-    #     ],
-    #     steps=[
-    #         StatusStep("amazon.echo.audio_video"),                   
-    #         StatusStep("amazon.echo.audio_video"),               
-    #         StatusStep("amazon.echo.audio_video"),               
-    #         StatusStep("amazon.echo.audio_video"),               
-    #         StatusStep("amazon.echo.audio_video"),               
-    #         StatusStep("amazon.echo.audio_video")                   
-    #     ],
-    #     packet_frequency_ms=int(random.random() * 6000 + 300)
-    # ),
+            Hop("wifi_hub", "levoit_air_purifier", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[
+            StatusStep("amazon.echo.audio_video"),                   
+            StatusStep("amazon.echo.audio_video"),               
+            StatusStep("amazon.echo.audio_video"),               
+            StatusStep("amazon.echo.audio_video"),               
+            StatusStep("amazon.echo.audio_video"),               
+            StatusStep("amazon.echo.audio_video")                   
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
 
-    # RouteRuntime(
-    #     route_id=48,
-    #     name="Amazon Server -> Ring Kamera",
-    #     hops=[
-    #         Hop("amazon_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+    RouteRuntime(
+        route_id=48,
+        name="Amazon Server -> Ring Kamera",
+        hops=[
+            Hop("amazon_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
 
-    #         Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-    #         Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-    #         Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-    #         Hop("fritzbox", "wifi_hub", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("fritzbox", "wifi_hub", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
 
-    #         Hop("wifi_hub", "ring_camera", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
-    #     ],
-    #     steps=[
-    #         StatusStep("amazon.kamera.video_audio"),                   
-    #         StatusStep("amazon.kamera.video_audio"),               
-    #         StatusStep("amazon.kamera.video_audio"),               
-    #         StatusStep("amazon.kamera.video_audio"),               
-    #         StatusStep("amazon.kamera.video_audio"),               
-    #         StatusStep("amazon.kamera.video_audio")                   
-    #     ],
-    #     packet_frequency_ms=int(random.random() * 6000 + 300)
-    # ),
+            Hop("wifi_hub", "ring_camera", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[
+            StatusStep("amazon.kamera.video_audio"),                   
+            StatusStep("amazon.kamera.video_audio"),               
+            StatusStep("amazon.kamera.video_audio"),               
+            StatusStep("amazon.kamera.video_audio"),               
+            StatusStep("amazon.kamera.video_audio"),               
+            StatusStep("amazon.kamera.video_audio")                   
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
 
-    # RouteRuntime(
-    #     route_id=51,
-    #     name="Pixel 7a -> OralB Zahnbürste",
-    #     hops=[
+    RouteRuntime(
+        route_id=51,
+        name="Pixel 7a -> OralB Zahnbürste",
+        hops=[
             
-    #         Hop("pixel_7a", "oralb_toothbrush", "BLE", speed_multiplier=1.0, ttl_ms=65000)
-    #     ],
-    #     steps=[              
-    #         StatusStep("oralb.zahnbürste.steuerbefehl")                   
-    #     ],
-    #     packet_frequency_ms=int(random.random() * 6000 + 300)
-    # ),
+            Hop("pixel_7a", "oralb_toothbrush", "BLE", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[              
+            StatusStep("oralb.zahnbürste.steuerbefehl")                   
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
 
-    # RouteRuntime(
-    #     route_id=52,
-    #     name="OralB Zahnbürste -> Pixel 7a",
-    #     hops=[
+    RouteRuntime(
+        route_id=52,
+        name="OralB Zahnbürste -> Pixel 7a",
+        hops=[
             
-    #         Hop("oralb_toothbrush", "pixel_7a", "BLE", speed_multiplier=1.0, ttl_ms=65000)
-    #     ],
-    #     steps=[              
-    #         StatusStep("oralb.zahnbürste.reinigungsroutinen")                   
-    #     ],
-    #     packet_frequency_ms=int(random.random() * 6000 + 300)
-    # ),
+            Hop("oralb_toothbrush", "pixel_7a", "BLE", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[              
+            StatusStep("oralb.zahnbürste.reinigungsroutinen")                   
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
 
-    # RouteRuntime(
-    #     route_id=53,
-    #     name="Pixel 7a -> ABUS Fahrradschloss",
-    #     hops=[
+    RouteRuntime(
+        route_id=53,
+        name="Pixel 7a -> ABUS Fahrradschloss",
+        hops=[
             
-    #         Hop("pixel_7a", "abus_lock", "BLE", speed_multiplier=1.0, ttl_ms=65000)
-    #     ],
-    #     steps=[              
-    #         StatusStep("abus.fahrradschloss.auf_zu")                   
-    #     ],
-    #     packet_frequency_ms=int(random.random() * 6000 + 300)
-    # ),
+            Hop("pixel_7a", "abus_lock", "BLE", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[              
+            StatusStep("abus.fahrradschloss.auf_zu")                   
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
 
-    # RouteRuntime(
-    #     route_id=54,
-    #     name="ABUS Fahrradschloss -> Pixel 7a",
-    #     hops=[
+    RouteRuntime(
+        route_id=54,
+        name="ABUS Fahrradschloss -> Pixel 7a",
+        hops=[
             
-    #         Hop("abus_lock", "pixel_7a", "BLE", speed_multiplier=1.0, ttl_ms=65000)
-    #     ],
-    #     steps=[              
-    #         StatusStep("abus.fahrradschloss.status")                   
-    #     ],
-    #     packet_frequency_ms=int(random.random() * 6000 + 300)
-    # ),
+            Hop("abus_lock", "pixel_7a", "BLE", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[              
+            StatusStep("abus.fahrradschloss.status")                   
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
 
-    # RouteRuntime(
-    #     route_id=55,
-    #     name="Masterlock Schlüsseltresor -> Pixel 7a",
-    #     hops=[
+    RouteRuntime(
+        route_id=55,
+        name="Masterlock Schlüsseltresor -> Pixel 7a",
+        hops=[
             
-    #         Hop("masterlock", "pixel_7a", "BLE", speed_multiplier=1.0, ttl_ms=65000)
-    #     ],
-    #     steps=[              
-    #         StatusStep("masterlock.schlüsseltresor.alarm")                   
-    #     ],
-    #     packet_frequency_ms=int(random.random() * 6000 + 300)
-    # ),
+            Hop("masterlock", "pixel_7a", "BLE", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[              
+            StatusStep("masterlock.schlüsseltresor.alarm")                   
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
 
-    # RouteRuntime(
-    #     route_id=56,
-    #     name="Pixel 7a -> Masterlock Schlüsseltresor",
-    #     hops=[
+    RouteRuntime(
+        route_id=56,
+        name="Pixel 7a -> Masterlock Schlüsseltresor",
+        hops=[
             
-    #         Hop("pixel_7a", "masterlock", "BLE", speed_multiplier=1.0, ttl_ms=65000)
-    #     ],
-    #     steps=[              
-    #         StatusStep("masterlock.schlüsseltresor.auf_zu")                   
-    #     ],
-    #     packet_frequency_ms=int(random.random() * 6000 + 300)
-    # ),
+            Hop("pixel_7a", "masterlock", "BLE", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[              
+            StatusStep("masterlock.schlüsseltresor.auf_zu")                   
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
 
-    # RouteRuntime(
-    #     route_id=57,
-    #     name="Garmin Smartwatch -> Pixel 7a",
-    #     hops=[
+    RouteRuntime(
+        route_id=57,
+        name="Garmin Smartwatch -> Pixel 7a",
+        hops=[
             
-    #         Hop("garmin_watch", "pixel_7a", "BLE", speed_multiplier=1.0, ttl_ms=65000)
-    #     ],
-    #     steps=[              
-    #         StatusStep("germin.smartwatch.gesundheitsdaten")                   
-    #     ],
-    #     packet_frequency_ms=int(random.random() * 6000 + 300)
-    # ),
+            Hop("garmin_watch", "pixel_7a", "BLE", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[              
+            StatusStep("germin.smartwatch.gesundheitsdaten")                   
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
 
-    # RouteRuntime(
-    #     route_id=58,
-    #     name="Pixel 7a -> Garmin Smartwatch",
-    #     hops=[
+    RouteRuntime(
+        route_id=58,
+        name="Pixel 7a -> Garmin Smartwatch",
+        hops=[
             
-    #         Hop("pixel_7a", "garmin_watch", "BLE", speed_multiplier=1.0, ttl_ms=65000)
-    #     ],
-    #     steps=[              
-    #         StatusStep("germin.smartwatch.steuerbefehle")                   
-    #     ],
-    #     packet_frequency_ms=int(random.random() * 6000 + 300)
-    # ),
+            Hop("pixel_7a", "garmin_watch", "BLE", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[              
+            StatusStep("germin.smartwatch.steuerbefehle")                   
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
+    
+    RouteRuntime(
+        route_id=59,
+        name="Pixel 7a -> Google Server",
+        hops=[
+            
+            Hop("pixel_7a", "fritzbox", "WLAN",speed_multiplier=1.0,ttl_ms=65000),
+            Hop("fritzbox", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("poe_switch", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("pfsense", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("internet_provider", "google_server", "Ethernet", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[              
+            StatusStep("pixel.oralbapp.userdaten"),
+            StatusStep("pixel.oralbapp.userdaten"),
+            StatusStep("pixel.oralbapp.userdaten"),
+            StatusStep("pixel.oralbapp.userdaten"),
+            StatusStep("pixel.oralbapp.userdaten")
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
+
+    RouteRuntime(
+        route_id=60,
+        name="Pixel 7a -> Amazon Server",
+        hops=[
+            
+            Hop("pixel_7a", "fritzbox", "WLAN",speed_multiplier=1.0,ttl_ms=65000),
+            Hop("fritzbox", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("poe_switch", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("pfsense", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("internet_provider", "amazon_server", "Ethernet", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[              
+            StatusStep("pixel.hamaapp.steuerbefehle"),
+            StatusStep("pixel.hamaapp.steuerbefehle"),
+            StatusStep("pixel.hamaapp.steuerbefehle"),
+            StatusStep("pixel.hamaapp.steuerbefehle"),
+            StatusStep("pixel.hamaapp.steuerbefehle")
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
+
+    RouteRuntime(
+        route_id=71,
+        name="Pixel 7a -> Amazon Server",
+        hops=[
+            
+            Hop("pixel_7a", "fritzbox", "WLAN",speed_multiplier=1.0,ttl_ms=65000),
+            Hop("fritzbox", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("poe_switch", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("pfsense", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("internet_provider", "amazon_server", "Ethernet", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[              
+            StatusStep("pixel.juraapp.ein_aus"),
+            StatusStep("pixel.juraapp.ein_aus"),
+            StatusStep("pixel.juraapp.ein_aus"),
+            StatusStep("pixel.juraapp.ein_aus"),
+            StatusStep("pixel.juraapp.ein_aus")
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
+    
+    RouteRuntime(
+        route_id=72,
+        name="Pixel 7a -> Amazon Server",
+        hops=[
+            
+            Hop("pixel_7a", "fritzbox", "WLAN",speed_multiplier=1.0,ttl_ms=65000),
+            Hop("fritzbox", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("poe_switch", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("pfsense", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("internet_provider", "amazon_server", "Ethernet", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[              
+            StatusStep("pixel.roborockapp.ein_aus"),
+            StatusStep("pixel.roborockapp.ein_aus"),
+            StatusStep("pixel.roborockapp.ein_aus"),
+            StatusStep("pixel.roborockapp.ein_aus"),
+            StatusStep("pixel.roborockapp.ein_aus")
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
+
+    RouteRuntime(
+        route_id=73,
+        name="Pixel 7a -> Amazon Server",
+        hops=[
+            
+            Hop("pixel_7a", "fritzbox", "WLAN",speed_multiplier=1.0,ttl_ms=65000),
+            Hop("fritzbox", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("poe_switch", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("pfsense", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("internet_provider", "amazon_server", "Ethernet", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[              
+            StatusStep("pixel.ringapp.steuerbefehle"),
+            StatusStep("pixel.ringapp.steuerbefehle"),
+            StatusStep("pixel.ringapp.steuerbefehle"),
+            StatusStep("pixel.ringapp.steuerbefehle"),
+            StatusStep("pixel.ringapp.steuerbefehle")
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
+
+    RouteRuntime(
+        route_id=74,
+        name="Pixel 7a -> Amazon Server",
+        hops=[
+            
+            Hop("pixel_7a", "fritzbox", "WLAN",speed_multiplier=1.0,ttl_ms=65000),
+            Hop("fritzbox", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("poe_switch", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("pfsense", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("internet_provider", "amazon_server", "Ethernet", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[              
+            StatusStep("pixel.tplinkapp.ein_aus"),
+            StatusStep("pixel.tplinkapp.ein_aus"),
+            StatusStep("pixel.tplinkapp.ein_aus"),
+            StatusStep("pixel.tplinkapp.ein_aus"),
+            StatusStep("pixel.tplinkapp.ein_aus")
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
+
+    RouteRuntime(
+        route_id=75,
+        name="Pixel 7a -> Amazon Server",
+        hops=[
+            
+            Hop("pixel_7a", "fritzbox", "WLAN",speed_multiplier=1.0,ttl_ms=65000),
+            Hop("fritzbox", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("poe_switch", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("pfsense", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("internet_provider", "amazon_server", "Ethernet", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[              
+            StatusStep("pixel.levoitapp.ein_aus"),
+            StatusStep("pixel.levoitapp.ein_aus"),
+            StatusStep("pixel.levoitapp.ein_aus"),
+            StatusStep("pixel.levoitapp.ein_aus"),
+            StatusStep("pixel.levoitapp.ein_aus")
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
+
+    RouteRuntime(
+        route_id=61,
+        name="Pixel 7a -> Homematic Server",
+        hops=[
+            
+            Hop("pixel_7a", "fritzbox", "WLAN",speed_multiplier=1.0,ttl_ms=65000),
+            Hop("fritzbox", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("poe_switch", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("pfsense", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("internet_provider", "139", "Ethernet", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[              
+            StatusStep("pixel.homematicapp.steuerbefehle"),
+            StatusStep("pixel.homematicapp.steuerbefehle"),
+            StatusStep("pixel.homematicapp.steuerbefehle"),
+            StatusStep("pixel.homematicapp.steuerbefehle"),
+            StatusStep("pixel.homematicapp.steuerbefehle")
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
+
+    RouteRuntime(
+        route_id=62,
+        name="Pixel 7a -> Bosch Server",
+        hops=[
+            
+            Hop("pixel_7a", "fritzbox", "WLAN",speed_multiplier=1.0,ttl_ms=65000),
+            Hop("fritzbox", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("poe_switch", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("pfsense", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("internet_provider", "bosch_server", "Ethernet", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[              
+            StatusStep("pixel.boschapp.steuerbefehle"),
+            StatusStep("pixel.boschapp.steuerbefehle"),
+            StatusStep("pixel.boschapp.steuerbefehle"),
+            StatusStep("pixel.boschapp.steuerbefehle"),
+            StatusStep("pixel.boschapp.steuerbefehle")
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
+
+    RouteRuntime(
+        route_id=63,
+        name="Pixel 7a -> Philips Server",
+        hops=[
+            
+            Hop("pixel_7a", "fritzbox", "WLAN",speed_multiplier=1.0,ttl_ms=65000),
+            Hop("fritzbox", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("poe_switch", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("pfsense", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("internet_provider", "phillips_server", "Ethernet", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[              
+            StatusStep("pixel.philipsapp.steuerbefehle"),
+            StatusStep("pixel.philipsapp.steuerbefehle"),
+            StatusStep("pixel.philipsapp.steuerbefehle"),
+            StatusStep("pixel.philipsapp.steuerbefehle"),
+            StatusStep("pixel.philipsapp.steuerbefehle")
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
+
+    RouteRuntime(
+        route_id=64,
+        name="Pixel 7a -> Vorwerk Server",
+        hops=[
+            
+            Hop("pixel_7a", "fritzbox", "WLAN",speed_multiplier=1.0,ttl_ms=65000),
+            Hop("fritzbox", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("poe_switch", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("pfsense", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("internet_provider", "vorwerk_server", "Ethernet", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[              
+            StatusStep("pixel.thermomix.ein_aus"),
+            StatusStep("pixel.thermomix.ein_aus"),
+            StatusStep("pixel.thermomix.ein_aus"),
+            StatusStep("pixel.thermomix.ein_aus"),
+            StatusStep("pixel.thermomix.ein_aus")
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
+
+    RouteRuntime(
+        route_id=65,
+        name="Google Server -> Pixel 7a",
+        hops=[
+            
+            Hop("google_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+
+            Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+
+            Hop("fritzbox", "pixel_7a", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[              
+            StatusStep("pixel.masterlockapp.standordabfrage"),
+            StatusStep("pixel.masterlockapp.standordabfrage"),
+            StatusStep("pixel.masterlockapp.standordabfrage"),
+            StatusStep("pixel.masterlockapp.standordabfrage"),
+            StatusStep("pixel.masterlockapp.standordabfrage")
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
+
+    RouteRuntime(
+        route_id=76,
+        name="Google Server -> Pixel 7a",
+        hops=[
+            
+            Hop("google_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+
+            Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+
+            Hop("fritzbox", "pixel_7a", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[              
+            StatusStep("pixel.abusapp.standordabfrage"),
+            StatusStep("pixel.abusapp.standordabfrage"),
+            StatusStep("pixel.abusapp.standordabfrage"),
+            StatusStep("pixel.abusapp.standordabfrage"),
+            StatusStep("pixel.abusapp.standordabfrage")
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
+
+    RouteRuntime(
+        route_id=66,
+        name="Amazon Server -> Pixel 7a",
+        hops=[
+            
+            Hop("amazon_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+
+            Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+
+            Hop("fritzbox", "pixel_7a", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[              
+            StatusStep("pixel.ringapp.audio_video"),
+            StatusStep("pixel.ringapp.audio_video"),
+            StatusStep("pixel.ringapp.audio_video"),
+            StatusStep("pixel.ringapp.audio_video"),
+            StatusStep("pixel.ringapp.audio_video")
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
+
+    RouteRuntime(
+        route_id=77,
+        name="Amazon Server -> Pixel 7a",
+        hops=[
+            
+            Hop("amazon_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+
+            Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+
+            Hop("fritzbox", "pixel_7a", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[              
+            StatusStep("pixel.hamaapp.audio_video"),
+            StatusStep("pixel.hamaapp.audio_video"),
+            StatusStep("pixel.hamaapp.audio_video"),
+            StatusStep("pixel.hamaapp.audio_video"),
+            StatusStep("pixel.hamaapp.audio_video")
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
+
+    RouteRuntime(
+        route_id=78,
+        name="Amazon Server -> Pixel 7a",
+        hops=[
+            
+            Hop("amazon_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+
+            Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+
+            Hop("fritzbox", "pixel_7a", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[              
+            StatusStep("pixel.juraapp.status"),
+            StatusStep("pixel.juraapp.status"),
+            StatusStep("pixel.juraapp.status"),
+            StatusStep("pixel.juraapp.status"),
+            StatusStep("pixel.juraapp.status")
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
+
+    RouteRuntime(
+        route_id=79,
+        name="Amazon Server -> Pixel 7a",
+        hops=[
+            
+            Hop("amazon_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+
+            Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+
+            Hop("fritzbox", "pixel_7a", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[              
+            StatusStep("pixel.roborockapp.status"),
+            StatusStep("pixel.roborockapp.status"),
+            StatusStep("pixel.roborockapp.status"),
+            StatusStep("pixel.roborockapp.status"),
+            StatusStep("pixel.roborockapp.status")
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
+
+    RouteRuntime(
+        route_id=80,
+        name="Amazon Server -> Pixel 7a",
+        hops=[
+            
+            Hop("amazon_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+
+            Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+
+            Hop("fritzbox", "pixel_7a", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[              
+            StatusStep("pixel.levoitapp.status"),
+            StatusStep("pixel.levoitapp.status"),
+            StatusStep("pixel.levoitapp.status"),
+            StatusStep("pixel.levoitapp.status"),
+            StatusStep("pixel.levoitapp.status")
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
+
+    RouteRuntime(
+        route_id=67,
+        name="Homematic Server -> Pixel 7a",
+        hops=[
+            
+            Hop("139", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+
+            Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+
+            Hop("fritzbox", "pixel_7a", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[              
+            StatusStep("pixel.homematicapp.alarm"),
+            StatusStep("pixel.homematicapp.alarm"),
+            StatusStep("pixel.homematicapp.alarm"),
+            StatusStep("pixel.homematicapp.alarm"),
+            StatusStep("pixel.homematicapp.alarm")
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
+
+    RouteRuntime(
+        route_id=67,
+        name="Bosch Server -> Pixel 7a",
+        hops=[
+            
+            Hop("bosch_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+
+            Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+
+            Hop("fritzbox", "pixel_7a", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[              
+            StatusStep("pixel.boschapp.audio_video"),
+            StatusStep("pixel.boschapp.audio_video"),
+            StatusStep("pixel.boschapp.audio_video"),
+            StatusStep("pixel.boschapp.audio_video"),
+            StatusStep("pixel.boschapp.audio_video")
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
+
+    RouteRuntime(
+        route_id=81,
+        name="Bosch Server -> Pixel 7a",
+        hops=[
+            
+            Hop("bosch_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+
+            Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+
+            Hop("fritzbox", "pixel_7a", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[              
+            StatusStep("pixel.boschapp.alarm"),
+            StatusStep("pixel.boschapp.alarm"),
+            StatusStep("pixel.boschapp.alarm"),
+            StatusStep("pixel.boschapp.alarm"),
+            StatusStep("pixel.boschapp.alarm")
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
+
+    RouteRuntime(
+        route_id=82,
+        name="Bosch Server -> Pixel 7a",
+        hops=[
+            
+            Hop("bosch_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+
+            Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+
+            Hop("fritzbox", "pixel_7a", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[              
+            StatusStep("pixel.boschapp.ein_aus"),
+            StatusStep("pixel.boschapp.ein_aus"),
+            StatusStep("pixel.boschapp.ein_aus"),
+            StatusStep("pixel.boschapp.ein_aus"),
+            StatusStep("pixel.boschapp.ein_aus")
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
+
+    RouteRuntime(
+        route_id=83,
+        name="Bosch Server -> Pixel 7a",
+        hops=[
+            
+            Hop("bosch_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+
+            Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+
+            Hop("fritzbox", "pixel_7a", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[              
+            StatusStep("pixel.boschapp.status"),
+            StatusStep("pixel.boschapp.status"),
+            StatusStep("pixel.boschapp.status"),
+            StatusStep("pixel.boschapp.status"),
+            StatusStep("pixel.boschapp.status")
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
+
+    RouteRuntime(
+        route_id=69,
+        name="Philips Server -> Pixel 7a",
+        hops=[
+            
+            Hop("phillips_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+
+            Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+
+            Hop("fritzbox", "pixel_7a", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[              
+            StatusStep("pixel.philipsapp.alarm"),
+            StatusStep("pixel.philipsapp.alarm"),
+            StatusStep("pixel.philipsapp.alarm"),
+            StatusStep("pixel.philipsapp.alarm"),
+            StatusStep("pixel.philipsapp.alarm")
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
+
+    RouteRuntime(
+        route_id=70,
+        name="Vorwerk Server -> Pixel 7a",
+        hops=[
+            
+            Hop("vorwerk_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+
+            Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+            Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
+
+            Hop("fritzbox", "pixel_7a", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
+        ],
+        steps=[              
+            StatusStep("pixel.levoitapp.messwerte"),
+            StatusStep("pixel.levoitapp.messwerte"),
+            StatusStep("pixel.levoitapp.messwerte"),
+            StatusStep("pixel.levoitapp.messwerte"),
+            StatusStep("pixel.levoitapp.messwerte")
+        ],
+        packet_frequency_ms=int(random.random() * 6000 + 300)
+    ),
+    ###############################################################################################################
+    RouteRuntime(
+        route_id=5,
+        name="Bosch Fensterkontakt -> Bosch Server",
+        hops=[
+            Hop("499", "Bosch Smart Home Controller", "ZigBee", speed_multiplier=1.0, ttl_ms=15000),
+            Hop("Bosch Smart Home Controller", "PoE-Switch", "Ethernet", speed_multiplier=1.0),
+            Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
+            Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
+            Hop("5850", "bosch_server", "Ethernet", speed_multiplier=1.0),
+        ],
+        steps=[
+            StatusStep("bosch.fensterkontakt.status"),
+            StatusStep("bosch.fensterkontakt.alarm"),
+        ],
+        packet_frequency_ms=9000,
+    ),
+        RouteRuntime(
+        route_id=6,
+        name="Bosch Funksteckdose -> Bosch Server",
+        hops=[
+            Hop("679", "Bosch Smart Home Controller", "ZigBee", speed_multiplier=1.16, ttl_ms=15000),
+            Hop("Bosch Smart Home Controller", "PoE-Switch", "Ethernet", speed_multiplier=1.0),
+            Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
+            Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
+            Hop("5850", "bosch_server", "Ethernet", speed_multiplier=1.0),
+        ],
+        steps=[
+            StatusStep("bosch.funksteckdose.status"),
+            StatusStep("bosch.funksteckdose.alarm"),
+        ],
+        packet_frequency_ms=9000,
+    ),
+        RouteRuntime(
+        route_id=7,
+        name="Bosch Wassersensor -> Bosch Server",
+        hops=[
+            Hop("54", "Bosch Smart Home Controller", "ZigBee", speed_multiplier=1.25, ttl_ms=15000),
+            Hop("Bosch Smart Home Controller", "PoE-Switch", "Ethernet", speed_multiplier=1.0),
+            Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
+            Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
+            Hop("5850", "bosch_server", "Ethernet", speed_multiplier=1.0),
+        ],
+        steps=[
+            StatusStep("bosch.wassersensor.status"),
+            StatusStep("bosch.wassersensor.alarm"),
+        ],
+        packet_frequency_ms=9000,
+    ),
+        RouteRuntime(
+        route_id=8,
+        name="Bosch Türschloss -> Bosch Server",
+        hops=[
+            Hop("496", "Bosch Smart Home Controller", "ZigBee", speed_multiplier=1.1, ttl_ms=15000),
+            Hop("Bosch Smart Home Controller", "PoE-Switch", "Ethernet", speed_multiplier=1.0),
+            Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
+            Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
+            Hop("5850", "bosch_server", "Ethernet", speed_multiplier=1.0),
+        ],
+        steps=[
+            StatusStep("bosch.türschloss.status"),
+            StatusStep("bosch.türschloss.alarm"),
+        ],
+        packet_frequency_ms=9000,
+    ),
+        RouteRuntime(
+        route_id=9,
+        name="Bosch Feuermelder -> Bosch Server",
+        hops=[
+            Hop("493", "Bosch Smart Home Controller", "ZigBee", speed_multiplier=1.3, ttl_ms=15000),
+            Hop("Bosch Smart Home Controller", "PoE-Switch", "Ethernet", speed_multiplier=1.0),
+            Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
+            Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
+            Hop("5850", "bosch_server", "Ethernet", speed_multiplier=1.0),
+        ],
+        steps=[
+            StatusStep("bosch.feuermelder.status"),
+            StatusStep("bosch.feuermelder.alarm"),
+        ],
+        packet_frequency_ms=9000,
+    ),
+        RouteRuntime(
+        route_id=10,
+        name="Bosch Bewegungssensor -> Bosch Server",
+        hops=[
+            Hop("hue_motion", "Bosch Smart Home Controller", "ZigBee", speed_multiplier=1.3, ttl_ms=17000),
+            Hop("Bosch Smart Home Controller", "PoE-Switch", "Ethernet", speed_multiplier=1.0),
+            Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
+            Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
+            Hop("5850", "bosch_server", "Ethernet", speed_multiplier=1.0),
+        ],
+        steps=[
+            StatusStep("bosch.bewegungssensor.status"),
+            StatusStep("bosch.bewegungssensor.alarm"),
+        ],
+        packet_frequency_ms=9000,
+    ),
+        RouteRuntime(
+        route_id=11,
+        name="Bosch Innenkamera -> Bosch Server",
+        hops=[
+            Hop("638", "Bosch Smart Home Controller", "ZigBee", speed_multiplier=1.0, ttl_ms=15000),
+            Hop("Bosch Smart Home Controller", "PoE-Switch", "Ethernet", speed_multiplier=1.0),
+            Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
+            Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
+            Hop("5850", "bosch_server", "Ethernet", speed_multiplier=1.0),
+        ],
+        steps=[
+            StatusStep("bosch.innenkamera.status"),
+            StatusStep("bosch.innenkamera.alarm"),
+        ],
+        packet_frequency_ms=9000,
+    ),
+        RouteRuntime(
+        route_id=12,
+        name="Bosch Server ->Bosch Funksteckdose ",
+        hops=[
+            Hop("bosch_server","5850", "Ethernet", speed_multiplier=1.16, ttl_ms=15000),
+            Hop("5850","pfSense" , "Ethernet", speed_multiplier=1.0),
+            Hop("pfSense","PoE-Switch" , "Ethernet", speed_multiplier=1.0),
+            Hop("PoE-Switch","Bosch Smart Home Controller" , "Ethernet", speed_multiplier=1.0),
+            Hop("Bosch Smart Home Controller","638" , "ZigBee", speed_multiplier=1.0),
+        ],
+        steps=[
+            StatusStep("bosch.bosch_server.status"),
+            StatusStep("bosch.bosch_server.alarm"),
+        ],
+        packet_frequency_ms=9000,
+    ),
+        RouteRuntime(
+        route_id=13,
+        name="Bosch Server ->Bosch Türschloss",
+        hops=[
+            Hop("bosch_server","5850", "Ethernet", speed_multiplier=1.16, ttl_ms=15000),
+            Hop("5850","pfSense" , "Ethernet", speed_multiplier=1.0),
+            Hop("pfSense","PoE-Switch" , "Ethernet", speed_multiplier=1.0),
+            Hop("PoE-Switch","Bosch Smart Home Controller" , "Ethernet", speed_multiplier=1.0),
+            Hop("Bosch Smart Home Controller","496" , "ZigBee", speed_multiplier=1.0),
+        ],
+        steps=[
+            StatusStep("bosch.bosch_server.status"),
+            StatusStep("bosch.bosch_server.alarm"),
+        ],
+        packet_frequency_ms=9000,
+    ),
+        RouteRuntime(
+        route_id=14,
+        name="Bosch Server ->Bosch Feuermelder",
+        hops=[
+            Hop("bosch_server","5850", "Ethernet", speed_multiplier=1.3, ttl_ms=15000),
+            Hop("5850","pfSense" , "Ethernet", speed_multiplier=1.0),
+            Hop("pfSense","PoE-Switch" , "Ethernet", speed_multiplier=1.0),
+            Hop("PoE-Switch","Bosch Smart Home Controller" , "Ethernet", speed_multiplier=1.0),
+            Hop("Bosch Smart Home Controller","493", "ZigBee", speed_multiplier=1.0),
+        ],
+        steps=[
+            StatusStep("bosch.bosch_server.status"),
+            StatusStep("bosch.bosch_server.alarm"),
+        ],
+        packet_frequency_ms=9000,
+    ),
+        RouteRuntime(
+        route_id=15,
+        name="Bosch Server ->Bosch Türschloss",
+        hops=[
+            Hop("bosch_server","5850", "Ethernet", speed_multiplier=1.25, ttl_ms=15000),
+            Hop("5850","pfSense" , "Ethernet", speed_multiplier=1.0),
+            Hop("pfSense","PoE-Switch" , "Ethernet", speed_multiplier=1.0),
+            Hop("PoE-Switch","Bosch Smart Home Controller" , "Ethernet", speed_multiplier=1.0),
+            Hop("Bosch Smart Home Controller","638", "ZigBee", speed_multiplier=1.0),
+        ],
+        steps=[
+            StatusStep("bosch.bosch_server.status"),
+            StatusStep("bosch.bosch_server.alarm"),
+        ],
+        packet_frequency_ms=9000,
+    ),
+        RouteRuntime(
+        route_id=16,
+        name="Philips Hue Bewegungssensor -> Philips Server",
+        hops=[
+            Hop("hue_motion","hue_bridge", "ZigBee", speed_multiplier=1.0, ttl_ms=15000),
+            Hop("hue_bridge","poe_switch" , "Ethernet", speed_multiplier=1.0),
+            Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
+            Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
+            Hop("5850", "phillips_server", "Ethernet", speed_multiplier=1.0),
+        ],
+        steps=[
+            StatusStep("bosch.bewegungssensor.status"),
+            StatusStep("bosch.bewegungssensor.alarm"),
+        ],
+        packet_frequency_ms=9000,
+    ),
+        RouteRuntime(
+        route_id=17,
+        name="Philips Hue Schreibtischlampe -> Philips Server",
+        hops=[
+            Hop("hue_lamp","hue_bridge", "ZigBee", speed_multiplier=1.16, ttl_ms=15000),
+            Hop("hue_bridge","poe_switch" , "Ethernet", speed_multiplier=1.0),
+            Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
+            Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
+            Hop("5850", "phillips_server", "Ethernet", speed_multiplier=1.0),
+        ],
+        steps=[
+            StatusStep("bosch.hue_lamp.status"),
+            StatusStep("bosch.hue_lamp.alarm"),
+        ],
+        packet_frequency_ms=9000,
+    ),
+        RouteRuntime(
+        route_id=18,
+        name="Phillips Server -> Phillips Schreibtischlampe",
+        hops=[
+            Hop("phillips_server", "5850", "Ethernet", speed_multiplier=1.3, ttl_ms=15000),
+            Hop("5850", "pfSense", "Ethernet", speed_multiplier=1.0),
+            Hop("pfSense", "PoE-Switch", "Ethernet", speed_multiplier=1.0),
+            Hop("poe_switch", "hue_bridge", "Ethernet", speed_multiplier=1.0),
+            Hop("hue_bridge", "hue_motion", "ZigBee", speed_multiplier=1.0),
+        ],
+        steps=[
+            StatusStep("bosch.phillips_server.status"),
+            StatusStep("bosch.phillips_server.alarm"),
+        ],
+        packet_frequency_ms=9000,
+    ),
+        RouteRuntime(
+        route_id=19,
+        name="Homematic Bewegungssensor -> Homematic Server",
+        hops=[
+            Hop("homematic_motion","homematic_controller", "ZigBee", speed_multiplier=1.0, ttl_ms=15000),
+            Hop("homematic_controller","poe_switch" , "Ethernet", speed_multiplier=1.0),
+            Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
+            Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
+            Hop("5850", "139", "Ethernet", speed_multiplier=1.0),
+        ],
+        steps=[
+            StatusStep("bosch.homematic_motion.status"),
+            StatusStep("bosch.homematic_motion.alarm"),
+        ],
+        packet_frequency_ms=9000,
+    ),
+        RouteRuntime(
+        route_id=20,
+        name="Homematic Rauchmelder -> Homematic Server",
+        hops=[
+            Hop("homematic_smoke", "homematic_controller", "ZigBee", speed_multiplier=1.16, ttl_ms=15000),
+            Hop("homematic_controller", "poe_switch", "Ethernet", speed_multiplier=1.0),
+            Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
+            Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
+            Hop("5850", "139", "Ethernet", speed_multiplier=1.0),
+        ],
+        steps=[
+            StatusStep("bosch.homematic_smoke.status"),
+            StatusStep("bosch.homematic_smoke.alarm"),
+        ],
+        packet_frequency_ms=9000,
+    ),
+        RouteRuntime(
+        route_id=21,
+        name="Homematic Funksteckdose -> Homematic Server",
+        hops=[
+            Hop("698", "homematic_controller", "ZigBee", speed_multiplier=1.16, ttl_ms=15000),
+            Hop("homematic_controller", "poe_switch", "Ethernet", speed_multiplier=1.0),
+            Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
+            Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
+            Hop("5850", "139", "Ethernet", speed_multiplier=1.0),
+        ],
+        steps=[
+            StatusStep("bosch.homematic_funksteckdose.status"),
+            StatusStep("bosch.homematic_funksteckdose.alarm"),
+        ],
+        packet_frequency_ms=9000,
+    ),
+        RouteRuntime(
+        route_id=22,
+        name="Hama Kamera -> Amazon Server",
+        hops=[
+            Hop("hama_camera", "wifi_hub", "WLAN", speed_multiplier=1.16, ttl_ms=15000),
+            Hop("wifi_hub", "fritzbox", "Ethernet", speed_multiplier=1.0),
+            Hop("fritzbox", "PoE-Switch", "Ethernet", speed_multiplier=1.0),
+            Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
+            Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
+            Hop("5850", "amazon_server", "Ethernet", speed_multiplier=1.0),
+        ],
+        steps=[
+            StatusStep("bosch.hama_camera.status"),
+            StatusStep("bosch.hama_camera.alarm"),
+        ],
+        packet_frequency_ms=9000,
+    ),
+        RouteRuntime(
+        route_id=23,
+        name="Jura 8 Kaffeemaschine -> Amazon Server",
+        hops=[
+            Hop("jura_coffee_machine", "wifi_hub", "WLAN", speed_multiplier=0.84, ttl_ms=15000),
+            Hop("wifi_hub", "fritzbox", "Ethernet", speed_multiplier=1.0),
+            Hop("fritzbox", "PoE-Switch", "Ethernet", speed_multiplier=1.0),
+            Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
+            Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
+            Hop("5850", "amazon_server", "Ethernet", speed_multiplier=1.0),
+        ],
+        steps=[
+            StatusStep("bosch.jura_8_kaffeemaschine.status"),
+            StatusStep("bosch.jura_8_kaffeemaschine.alarm"),
+        ],
+        packet_frequency_ms=9000,
+    ),
+        RouteRuntime(
+        route_id=24,
+        name="Roborock 8 Staubsauger -> Amazon Server",
+        hops=[
+            Hop("roborock_vacuum", "wifi_hub", "WLAN", speed_multiplier=0.9, ttl_ms=15000),
+            Hop("wifi_hub", "fritzbox", "Ethernet", speed_multiplier=1.0),
+            Hop("fritzbox", "PoE-Switch", "Ethernet", speed_multiplier=1.0),
+            Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
+            Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
+            Hop("5850", "amazon_server", "Ethernet", speed_multiplier=1.0),
+        ],
+        steps=[
+            StatusStep("bosch.roborock_vacuum.status"),
+            StatusStep("bosch.roborock_vacuum.alarm"),
+        ],
+        packet_frequency_ms=9000,
+    ),
+        RouteRuntime(
+        route_id=25,
+        name="Thermomix M6 -> Vorwerk Server",
+        hops=[
+            Hop("thermomix_m6", "wifi_hub", "WLAN", speed_multiplier=1.0, ttl_ms=15000),
+            Hop("wifi_hub", "fritzbox", "Ethernet", speed_multiplier=1.0),
+            Hop("fritzbox", "PoE-Switch", "Ethernet", speed_multiplier=1.0),
+            Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
+            Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
+            Hop("5850", "vorwerk_server", "Ethernet", speed_multiplier=1.0),
+        ],
+        steps=[
+            StatusStep("bosch.thermomix_m6.status"),
+            StatusStep("bosch.thermomix_m6.alarm"),
+        ],
+        packet_frequency_ms=9000,
+    ),
+        RouteRuntime(
+        route_id=26,
+        name="TP-Link Funksteckdose -> Amazon Server",
+        hops=[
+            Hop("tplink_socket", "wifi_hub", "WLAN", speed_multiplier=1.16, ttl_ms=15000),
+            Hop("wifi_hub", "fritzbox", "Ethernet", speed_multiplier=1.0),
+            Hop("fritzbox", "PoE-Switch", "Ethernet", speed_multiplier=1.0),
+            Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
+            Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
+            Hop("5850", "amazon_server", "Ethernet", speed_multiplier=1.0),
+        ],
+        steps=[
+            StatusStep("bosch.tplink_socket.status"),
+            StatusStep("bosch.tplink_socket.alarm"),
+        ],
+        packet_frequency_ms=9000,
+    ),
+        RouteRuntime(
+        route_id=27,
+        name="Witings Körperwaage -> Google Server",
+        hops=[
+            Hop("withings_scale", "wifi_hub", "WLAN", speed_multiplier=1.3, ttl_ms=15000),
+            Hop("wifi_hub", "fritzbox", "Ethernet", speed_multiplier=1.0),
+            Hop("fritzbox", "PoE-Switch", "Ethernet", speed_multiplier=1.0),
+            Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
+            Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
+            Hop("5850", "google_server", "Ethernet", speed_multiplier=1.0),
+        ],
+        steps=[
+            StatusStep("bosch.withings_scale.status"),
+            StatusStep("bosch.withings_scale.alarm"),
+        ],
+        packet_frequency_ms=9000,
+    ),
+        RouteRuntime(
+        route_id=28,
+        name="Witings Körperwaage -> Google Server",
+        hops=[
+            Hop("firetv_stick", "wifi_hub", "WLAN", speed_multiplier=1.25, ttl_ms=15000),
+            Hop("wifi_hub", "fritzbox", "Ethernet", speed_multiplier=1.0),
+            Hop("fritzbox", "PoE-Switch", "Ethernet", speed_multiplier=1.0),
+            Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
+            Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
+            Hop("5850", "amazon_server", "Ethernet", speed_multiplier=1.0),
+        ],
+        steps=[
+            StatusStep("bosch.firetv_stick.status"),
+            StatusStep("bosch.firetv_stick.alarm"),
+        ],
+        packet_frequency_ms=9000,
+    ),
+        RouteRuntime(
+        route_id=29,
+        name="Witings Körperwaage -> Google Server",
+        hops=[
+            Hop("chromecast", "wifi_hub", "WLAN", speed_multiplier=1.3, ttl_ms=15000),
+            Hop("wifi_hub", "fritzbox", "Ethernet", speed_multiplier=1.0),
+            Hop("fritzbox", "PoE-Switch", "Ethernet", speed_multiplier=1.0),
+            Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
+            Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
+            Hop("5850", "google_server", "Ethernet", speed_multiplier=1.0),
+        ],
+        steps=[
+            StatusStep("bosch.chromecast.status"),
+            StatusStep("bosch.chromecast.alarm"),
+        ],
+        packet_frequency_ms=9000,
+    ),
+        RouteRuntime(
+        route_id=30,
+        name="Witings Körperwaage -> Google Server",
+        hops=[
+            Hop("smart_display", "wifi_hub", "WLAN", speed_multiplier=1.25, ttl_ms=15000),
+            Hop("wifi_hub", "fritzbox", "Ethernet", speed_multiplier=1.0),
+            Hop("fritzbox", "PoE-Switch", "Ethernet", speed_multiplier=1.0),
+            Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
+            Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
+            Hop("5850", "amazon_server", "Ethernet", speed_multiplier=1.0),
+        ],
+        steps=[
+            StatusStep("bosch.smart_display.status"),
+            StatusStep("bosch.smart_display.alarm"),
+        ],
+        packet_frequency_ms=9000,
+    ),
+    RouteRuntime(
+        route_id=31,
+        name="Witings Körperwaage -> Google Server",
+        hops=[
+            Hop("levoit_air_purifier", "wifi_hub", "WLAN", speed_multiplier=1.25, ttl_ms=15000),
+            Hop("wifi_hub", "fritzbox", "Ethernet", speed_multiplier=1.0),
+            Hop("fritzbox", "PoE-Switch", "Ethernet", speed_multiplier=1.0),
+            Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
+            Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
+            Hop("5850", "amazon_server", "Ethernet", speed_multiplier=1.0),
+        ],
+        steps=[
+            StatusStep("bosch.levoit_air_purifier.status"),
+            StatusStep("bosch.levoit_air_purifier.alarm"),
+        ],
+        packet_frequency_ms=9000,
+    ),
+    RouteRuntime(
+        route_id=32,
+        name="Witings Körperwaage -> Google Server",
+        hops=[
+            Hop("ring_camera", "wifi_hub", "WLAN", speed_multiplier=1.25, ttl_ms=15000),
+            Hop("wifi_hub", "fritzbox", "Ethernet", speed_multiplier=1.0),
+            Hop("fritzbox", "PoE-Switch", "Ethernet", speed_multiplier=1.0),
+            Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
+            Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
+            Hop("5850", "amazon_server", "Ethernet", speed_multiplier=1.0),
+        ],
+        steps=[
+            StatusStep("bosch.ring_camera.status"),
+            StatusStep("bosch.ring_camera.alarm"),
+        ],
+        packet_frequency_ms=9000,
+    ),
 ]
-    
-#     RouteRuntime(
-#         route_id=59,
-#         name="Pixel 7a -> Google Server",
-#         hops=[
-            
-#             Hop("pixel_7a", "fritzbox", "WLAN",speed_multiplier=1.0,ttl_ms=65000),
-#             Hop("fritzbox", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("poe_switch", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("pfsense", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("internet_provider", "google_server", "Ethernet", speed_multiplier=1.0, ttl_ms=65000)
-#         ],
-#         steps=[              
-#             StatusStep("pixel.oralbapp.userdaten"),
-#             StatusStep("pixel.oralbapp.userdaten"),
-#             StatusStep("pixel.oralbapp.userdaten"),
-#             StatusStep("pixel.oralbapp.userdaten"),
-#             StatusStep("pixel.oralbapp.userdaten")
-#         ],
-#         packet_frequency_ms=int(random.random() * 6000 + 300)
-#     ),
-
-#     RouteRuntime(
-#         route_id=60,
-#         name="Pixel 7a -> Amazon Server",
-#         hops=[
-            
-#             Hop("pixel_7a", "fritzbox", "WLAN",speed_multiplier=1.0,ttl_ms=65000),
-#             Hop("fritzbox", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("poe_switch", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("pfsense", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("internet_provider", "amazon_server", "Ethernet", speed_multiplier=1.0, ttl_ms=65000)
-#         ],
-#         steps=[              
-#             StatusStep("pixel.hamaapp.steuerbefehle"),
-#             StatusStep("pixel.hamaapp.steuerbefehle"),
-#             StatusStep("pixel.hamaapp.steuerbefehle"),
-#             StatusStep("pixel.hamaapp.steuerbefehle"),
-#             StatusStep("pixel.hamaapp.steuerbefehle")
-#         ],
-#         packet_frequency_ms=int(random.random() * 6000 + 300)
-#     ),
-
-#     RouteRuntime(
-#         route_id=71,
-#         name="Pixel 7a -> Amazon Server",
-#         hops=[
-            
-#             Hop("pixel_7a", "fritzbox", "WLAN",speed_multiplier=1.0,ttl_ms=65000),
-#             Hop("fritzbox", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("poe_switch", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("pfsense", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("internet_provider", "amazon_server", "Ethernet", speed_multiplier=1.0, ttl_ms=65000)
-#         ],
-#         steps=[              
-#             StatusStep("pixel.juraapp.ein_aus"),
-#             StatusStep("pixel.juraapp.ein_aus"),
-#             StatusStep("pixel.juraapp.ein_aus"),
-#             StatusStep("pixel.juraapp.ein_aus"),
-#             StatusStep("pixel.juraapp.ein_aus")
-#         ],
-#         packet_frequency_ms=int(random.random() * 6000 + 300)
-#     ),
-    
-#     RouteRuntime(
-#         route_id=72,
-#         name="Pixel 7a -> Amazon Server",
-#         hops=[
-            
-#             Hop("pixel_7a", "fritzbox", "WLAN",speed_multiplier=1.0,ttl_ms=65000),
-#             Hop("fritzbox", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("poe_switch", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("pfsense", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("internet_provider", "amazon_server", "Ethernet", speed_multiplier=1.0, ttl_ms=65000)
-#         ],
-#         steps=[              
-#             StatusStep("pixel.roborockapp.ein_aus"),
-#             StatusStep("pixel.roborockapp.ein_aus"),
-#             StatusStep("pixel.roborockapp.ein_aus"),
-#             StatusStep("pixel.roborockapp.ein_aus"),
-#             StatusStep("pixel.roborockapp.ein_aus")
-#         ],
-#         packet_frequency_ms=int(random.random() * 6000 + 300)
-#     ),
-
-#     RouteRuntime(
-#         route_id=73,
-#         name="Pixel 7a -> Amazon Server",
-#         hops=[
-            
-#             Hop("pixel_7a", "fritzbox", "WLAN",speed_multiplier=1.0,ttl_ms=65000),
-#             Hop("fritzbox", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("poe_switch", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("pfsense", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("internet_provider", "amazon_server", "Ethernet", speed_multiplier=1.0, ttl_ms=65000)
-#         ],
-#         steps=[              
-#             StatusStep("pixel.ringapp.steuerbefehle"),
-#             StatusStep("pixel.ringapp.steuerbefehle"),
-#             StatusStep("pixel.ringapp.steuerbefehle"),
-#             StatusStep("pixel.ringapp.steuerbefehle"),
-#             StatusStep("pixel.ringapp.steuerbefehle")
-#         ],
-#         packet_frequency_ms=int(random.random() * 6000 + 300)
-#     ),
-
-#     RouteRuntime(
-#         route_id=74,
-#         name="Pixel 7a -> Amazon Server",
-#         hops=[
-            
-#             Hop("pixel_7a", "fritzbox", "WLAN",speed_multiplier=1.0,ttl_ms=65000),
-#             Hop("fritzbox", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("poe_switch", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("pfsense", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("internet_provider", "amazon_server", "Ethernet", speed_multiplier=1.0, ttl_ms=65000)
-#         ],
-#         steps=[              
-#             StatusStep("pixel.tplinkapp.ein_aus"),
-#             StatusStep("pixel.tplinkapp.ein_aus"),
-#             StatusStep("pixel.tplinkapp.ein_aus"),
-#             StatusStep("pixel.tplinkapp.ein_aus"),
-#             StatusStep("pixel.tplinkapp.ein_aus")
-#         ],
-#         packet_frequency_ms=int(random.random() * 6000 + 300)
-#     ),
-
-#     RouteRuntime(
-#         route_id=75,
-#         name="Pixel 7a -> Amazon Server",
-#         hops=[
-            
-#             Hop("pixel_7a", "fritzbox", "WLAN",speed_multiplier=1.0,ttl_ms=65000),
-#             Hop("fritzbox", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("poe_switch", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("pfsense", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("internet_provider", "amazon_server", "Ethernet", speed_multiplier=1.0, ttl_ms=65000)
-#         ],
-#         steps=[              
-#             StatusStep("pixel.levoitapp.ein_aus"),
-#             StatusStep("pixel.levoitapp.ein_aus"),
-#             StatusStep("pixel.levoitapp.ein_aus"),
-#             StatusStep("pixel.levoitapp.ein_aus"),
-#             StatusStep("pixel.levoitapp.ein_aus")
-#         ],
-#         packet_frequency_ms=int(random.random() * 6000 + 300)
-#     ),
-
-#     RouteRuntime(
-#         route_id=61,
-#         name="Pixel 7a -> Homematic Server",
-#         hops=[
-            
-#             Hop("pixel_7a", "fritzbox", "WLAN",speed_multiplier=1.0,ttl_ms=65000),
-#             Hop("fritzbox", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("poe_switch", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("pfsense", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("internet_provider", "139", "Ethernet", speed_multiplier=1.0, ttl_ms=65000)
-#         ],
-#         steps=[              
-#             StatusStep("pixel.homematicapp.steuerbefehle"),
-#             StatusStep("pixel.homematicapp.steuerbefehle"),
-#             StatusStep("pixel.homematicapp.steuerbefehle"),
-#             StatusStep("pixel.homematicapp.steuerbefehle"),
-#             StatusStep("pixel.homematicapp.steuerbefehle")
-#         ],
-#         packet_frequency_ms=int(random.random() * 6000 + 300)
-#     ),
-
-#     RouteRuntime(
-#         route_id=62,
-#         name="Pixel 7a -> Bosch Server",
-#         hops=[
-            
-#             Hop("pixel_7a", "fritzbox", "WLAN",speed_multiplier=1.0,ttl_ms=65000),
-#             Hop("fritzbox", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("poe_switch", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("pfsense", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("internet_provider", "bosch_server", "Ethernet", speed_multiplier=1.0, ttl_ms=65000)
-#         ],
-#         steps=[              
-#             StatusStep("pixel.boschapp.steuerbefehle"),
-#             StatusStep("pixel.boschapp.steuerbefehle"),
-#             StatusStep("pixel.boschapp.steuerbefehle"),
-#             StatusStep("pixel.boschapp.steuerbefehle"),
-#             StatusStep("pixel.boschapp.steuerbefehle")
-#         ],
-#         packet_frequency_ms=int(random.random() * 6000 + 300)
-#     ),
-
-#     RouteRuntime(
-#         route_id=63,
-#         name="Pixel 7a -> Philips Server",
-#         hops=[
-            
-#             Hop("pixel_7a", "fritzbox", "WLAN",speed_multiplier=1.0,ttl_ms=65000),
-#             Hop("fritzbox", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("poe_switch", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("pfsense", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("internet_provider", "phillips_server", "Ethernet", speed_multiplier=1.0, ttl_ms=65000)
-#         ],
-#         steps=[              
-#             StatusStep("pixel.philipsapp.steuerbefehle"),
-#             StatusStep("pixel.philipsapp.steuerbefehle"),
-#             StatusStep("pixel.philipsapp.steuerbefehle"),
-#             StatusStep("pixel.philipsapp.steuerbefehle"),
-#             StatusStep("pixel.philipsapp.steuerbefehle")
-#         ],
-#         packet_frequency_ms=int(random.random() * 6000 + 300)
-#     ),
-
-#     RouteRuntime(
-#         route_id=64,
-#         name="Pixel 7a -> Vorwerk Server",
-#         hops=[
-            
-#             Hop("pixel_7a", "fritzbox", "WLAN",speed_multiplier=1.0,ttl_ms=65000),
-#             Hop("fritzbox", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("poe_switch", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("pfsense", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("internet_provider", "vorwerk_server", "Ethernet", speed_multiplier=1.0, ttl_ms=65000)
-#         ],
-#         steps=[              
-#             StatusStep("pixel.thermomix.ein_aus"),
-#             StatusStep("pixel.thermomix.ein_aus"),
-#             StatusStep("pixel.thermomix.ein_aus"),
-#             StatusStep("pixel.thermomix.ein_aus"),
-#             StatusStep("pixel.thermomix.ein_aus")
-#         ],
-#         packet_frequency_ms=int(random.random() * 6000 + 300)
-#     ),
-
-#     RouteRuntime(
-#         route_id=65,
-#         name="Google Server -> Pixel 7a",
-#         hops=[
-            
-#             Hop("google_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-
-#             Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-
-#             Hop("fritzbox", "pixel_7a", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
-#         ],
-#         steps=[              
-#             StatusStep("pixel.masterlockapp.standordabfrage"),
-#             StatusStep("pixel.masterlockapp.standordabfrage"),
-#             StatusStep("pixel.masterlockapp.standordabfrage"),
-#             StatusStep("pixel.masterlockapp.standordabfrage"),
-#             StatusStep("pixel.masterlockapp.standordabfrage")
-#         ],
-#         packet_frequency_ms=int(random.random() * 6000 + 300)
-#     ),
-
-#     RouteRuntime(
-#         route_id=76,
-#         name="Google Server -> Pixel 7a",
-#         hops=[
-            
-#             Hop("google_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-
-#             Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-
-#             Hop("fritzbox", "pixel_7a", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
-#         ],
-#         steps=[              
-#             StatusStep("pixel.abusapp.standordabfrage"),
-#             StatusStep("pixel.abusapp.standordabfrage"),
-#             StatusStep("pixel.abusapp.standordabfrage"),
-#             StatusStep("pixel.abusapp.standordabfrage"),
-#             StatusStep("pixel.abusapp.standordabfrage")
-#         ],
-#         packet_frequency_ms=int(random.random() * 6000 + 300)
-#     ),
-
-#     RouteRuntime(
-#         route_id=66,
-#         name="Amazon Server -> Pixel 7a",
-#         hops=[
-            
-#             Hop("amazon_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-
-#             Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-
-#             Hop("fritzbox", "pixel_7a", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
-#         ],
-#         steps=[              
-#             StatusStep("pixel.ringapp.audio_video"),
-#             StatusStep("pixel.ringapp.audio_video"),
-#             StatusStep("pixel.ringapp.audio_video"),
-#             StatusStep("pixel.ringapp.audio_video"),
-#             StatusStep("pixel.ringapp.audio_video")
-#         ],
-#         packet_frequency_ms=int(random.random() * 6000 + 300)
-#     ),
-
-#     RouteRuntime(
-#         route_id=77,
-#         name="Amazon Server -> Pixel 7a",
-#         hops=[
-            
-#             Hop("amazon_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-
-#             Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-
-#             Hop("fritzbox", "pixel_7a", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
-#         ],
-#         steps=[              
-#             StatusStep("pixel.hamaapp.audio_video"),
-#             StatusStep("pixel.hamaapp.audio_video"),
-#             StatusStep("pixel.hamaapp.audio_video"),
-#             StatusStep("pixel.hamaapp.audio_video"),
-#             StatusStep("pixel.hamaapp.audio_video")
-#         ],
-#         packet_frequency_ms=int(random.random() * 6000 + 300)
-#     ),
-
-#     RouteRuntime(
-#         route_id=78,
-#         name="Amazon Server -> Pixel 7a",
-#         hops=[
-            
-#             Hop("amazon_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-
-#             Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-
-#             Hop("fritzbox", "pixel_7a", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
-#         ],
-#         steps=[              
-#             StatusStep("pixel.juraapp.status"),
-#             StatusStep("pixel.juraapp.status"),
-#             StatusStep("pixel.juraapp.status"),
-#             StatusStep("pixel.juraapp.status"),
-#             StatusStep("pixel.juraapp.status")
-#         ],
-#         packet_frequency_ms=int(random.random() * 6000 + 300)
-#     ),
-
-#     RouteRuntime(
-#         route_id=79,
-#         name="Amazon Server -> Pixel 7a",
-#         hops=[
-            
-#             Hop("amazon_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-
-#             Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-
-#             Hop("fritzbox", "pixel_7a", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
-#         ],
-#         steps=[              
-#             StatusStep("pixel.roborockapp.status"),
-#             StatusStep("pixel.roborockapp.status"),
-#             StatusStep("pixel.roborockapp.status"),
-#             StatusStep("pixel.roborockapp.status"),
-#             StatusStep("pixel.roborockapp.status")
-#         ],
-#         packet_frequency_ms=int(random.random() * 6000 + 300)
-#     ),
-
-#     RouteRuntime(
-#         route_id=80,
-#         name="Amazon Server -> Pixel 7a",
-#         hops=[
-            
-#             Hop("amazon_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-
-#             Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-
-#             Hop("fritzbox", "pixel_7a", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
-#         ],
-#         steps=[              
-#             StatusStep("pixel.levoitapp.status"),
-#             StatusStep("pixel.levoitapp.status"),
-#             StatusStep("pixel.levoitapp.status"),
-#             StatusStep("pixel.levoitapp.status"),
-#             StatusStep("pixel.levoitapp.status")
-#         ],
-#         packet_frequency_ms=int(random.random() * 6000 + 300)
-#     ),
-
-#     RouteRuntime(
-#         route_id=67,
-#         name="Homematic Server -> Pixel 7a",
-#         hops=[
-            
-#             Hop("139", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-
-#             Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-
-#             Hop("fritzbox", "pixel_7a", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
-#         ],
-#         steps=[              
-#             StatusStep("pixel.homematicapp.alarm"),
-#             StatusStep("pixel.homematicapp.alarm"),
-#             StatusStep("pixel.homematicapp.alarm"),
-#             StatusStep("pixel.homematicapp.alarm"),
-#             StatusStep("pixel.homematicapp.alarm")
-#         ],
-#         packet_frequency_ms=int(random.random() * 6000 + 300)
-#     ),
-
-#     RouteRuntime(
-#         route_id=67,
-#         name="Bosch Server -> Pixel 7a",
-#         hops=[
-            
-#             Hop("bosch_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-
-#             Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-
-#             Hop("fritzbox", "pixel_7a", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
-#         ],
-#         steps=[              
-#             StatusStep("pixel.boschapp.audio_video"),
-#             StatusStep("pixel.boschapp.audio_video"),
-#             StatusStep("pixel.boschapp.audio_video"),
-#             StatusStep("pixel.boschapp.audio_video"),
-#             StatusStep("pixel.boschapp.audio_video")
-#         ],
-#         packet_frequency_ms=int(random.random() * 6000 + 300)
-#     ),
-
-#     RouteRuntime(
-#         route_id=81,
-#         name="Bosch Server -> Pixel 7a",
-#         hops=[
-            
-#             Hop("bosch_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-
-#             Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-
-#             Hop("fritzbox", "pixel_7a", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
-#         ],
-#         steps=[              
-#             StatusStep("pixel.boschapp.alarm"),
-#             StatusStep("pixel.boschapp.alarm"),
-#             StatusStep("pixel.boschapp.alarm"),
-#             StatusStep("pixel.boschapp.alarm"),
-#             StatusStep("pixel.boschapp.alarm")
-#         ],
-#         packet_frequency_ms=int(random.random() * 6000 + 300)
-#     ),
-
-#     RouteRuntime(
-#         route_id=82,
-#         name="Bosch Server -> Pixel 7a",
-#         hops=[
-            
-#             Hop("bosch_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-
-#             Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-
-#             Hop("fritzbox", "pixel_7a", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
-#         ],
-#         steps=[              
-#             StatusStep("pixel.boschapp.ein_aus"),
-#             StatusStep("pixel.boschapp.ein_aus"),
-#             StatusStep("pixel.boschapp.ein_aus"),
-#             StatusStep("pixel.boschapp.ein_aus"),
-#             StatusStep("pixel.boschapp.ein_aus")
-#         ],
-#         packet_frequency_ms=int(random.random() * 6000 + 300)
-#     ),
-
-#     RouteRuntime(
-#         route_id=83,
-#         name="Bosch Server -> Pixel 7a",
-#         hops=[
-            
-#             Hop("bosch_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-
-#             Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-
-#             Hop("fritzbox", "pixel_7a", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
-#         ],
-#         steps=[              
-#             StatusStep("pixel.boschapp.status"),
-#             StatusStep("pixel.boschapp.status"),
-#             StatusStep("pixel.boschapp.status"),
-#             StatusStep("pixel.boschapp.status"),
-#             StatusStep("pixel.boschapp.status")
-#         ],
-#         packet_frequency_ms=int(random.random() * 6000 + 300)
-#     ),
-
-#     RouteRuntime(
-#         route_id=69,
-#         name="Philips Server -> Pixel 7a",
-#         hops=[
-            
-#             Hop("phillips_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-
-#             Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-
-#             Hop("fritzbox", "pixel_7a", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
-#         ],
-#         steps=[              
-#             StatusStep("pixel.philipsapp.alarm"),
-#             StatusStep("pixel.philipsapp.alarm"),
-#             StatusStep("pixel.philipsapp.alarm"),
-#             StatusStep("pixel.philipsapp.alarm"),
-#             StatusStep("pixel.philipsapp.alarm")
-#         ],
-#         packet_frequency_ms=int(random.random() * 6000 + 300)
-#     ),
-
-#     RouteRuntime(
-#         route_id=70,
-#         name="Vorwerk Server -> Pixel 7a",
-#         hops=[
-            
-#             Hop("vorwerk_server", "internet_provider", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-
-#             Hop("internet_provider", "pfsense", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("pfsense", "poe_switch", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-#             Hop("poe_switch", "fritzbox", "Ethernet", speed_multiplier=1.0, ttl_ms=65000),
-
-#             Hop("fritzbox", "pixel_7a", "WLAN", speed_multiplier=1.0, ttl_ms=65000)
-#         ],
-#         steps=[              
-#             StatusStep("pixel.levoitapp.messwerte"),
-#             StatusStep("pixel.levoitapp.messwerte"),
-#             StatusStep("pixel.levoitapp.messwerte"),
-#             StatusStep("pixel.levoitapp.messwerte"),
-#             StatusStep("pixel.levoitapp.messwerte")
-#         ],
-#         packet_frequency_ms=int(random.random() * 6000 + 300)
-#     ),
-#     ###############################################################################################################
-#     RouteRuntime(
-#         route_id=5,
-#         name="Bosch Fensterkontakt -> Bosch Server",
-#         hops=[
-#             Hop("499", "Bosch Smart Home Controller", "ZigBee", speed_multiplier=1.0, ttl_ms=15000),
-#             Hop("Bosch Smart Home Controller", "PoE-Switch", "Ethernet", speed_multiplier=1.0),
-#             Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
-#             Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
-#             Hop("5850", "bosch_server", "Ethernet", speed_multiplier=1.0),
-#         ],
-#         steps=[
-#             StatusStep("bosch.fensterkontakt.status"),
-#             StatusStep("bosch.fensterkontakt.alarm"),
-#         ],
-#         packet_frequency_ms=9000,
-#     ),
-#         RouteRuntime(
-#         route_id=6,
-#         name="Bosch Funksteckdose -> Bosch Server",
-#         hops=[
-#             Hop("679", "Bosch Smart Home Controller", "ZigBee", speed_multiplier=1.16, ttl_ms=15000),
-#             Hop("Bosch Smart Home Controller", "PoE-Switch", "Ethernet", speed_multiplier=1.0),
-#             Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
-#             Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
-#             Hop("5850", "bosch_server", "Ethernet", speed_multiplier=1.0),
-#         ],
-#         steps=[
-#             StatusStep("bosch.funksteckdose.status"),
-#             StatusStep("bosch.funksteckdose.alarm"),
-#         ],
-#         packet_frequency_ms=9000,
-#     ),
-#         RouteRuntime(
-#         route_id=7,
-#         name="Bosch Wassersensor -> Bosch Server",
-#         hops=[
-#             Hop("54", "Bosch Smart Home Controller", "ZigBee", speed_multiplier=1.25, ttl_ms=15000),
-#             Hop("Bosch Smart Home Controller", "PoE-Switch", "Ethernet", speed_multiplier=1.0),
-#             Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
-#             Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
-#             Hop("5850", "bosch_server", "Ethernet", speed_multiplier=1.0),
-#         ],
-#         steps=[
-#             StatusStep("bosch.wassersensor.status"),
-#             StatusStep("bosch.wassersensor.alarm"),
-#         ],
-#         packet_frequency_ms=9000,
-#     ),
-#         RouteRuntime(
-#         route_id=8,
-#         name="Bosch Türschloss -> Bosch Server",
-#         hops=[
-#             Hop("496", "Bosch Smart Home Controller", "ZigBee", speed_multiplier=1.1, ttl_ms=15000),
-#             Hop("Bosch Smart Home Controller", "PoE-Switch", "Ethernet", speed_multiplier=1.0),
-#             Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
-#             Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
-#             Hop("5850", "bosch_server", "Ethernet", speed_multiplier=1.0),
-#         ],
-#         steps=[
-#             StatusStep("bosch.türschloss.status"),
-#             StatusStep("bosch.türschloss.alarm"),
-#         ],
-#         packet_frequency_ms=9000,
-#     ),
-#         RouteRuntime(
-#         route_id=9,
-#         name="Bosch Feuermelder -> Bosch Server",
-#         hops=[
-#             Hop("493", "Bosch Smart Home Controller", "ZigBee", speed_multiplier=1.3, ttl_ms=15000),
-#             Hop("Bosch Smart Home Controller", "PoE-Switch", "Ethernet", speed_multiplier=1.0),
-#             Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
-#             Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
-#             Hop("5850", "bosch_server", "Ethernet", speed_multiplier=1.0),
-#         ],
-#         steps=[
-#             StatusStep("bosch.feuermelder.status"),
-#             StatusStep("bosch.feuermelder.alarm"),
-#         ],
-#         packet_frequency_ms=9000,
-#     ),
-#         RouteRuntime(
-#         route_id=10,
-#         name="Bosch Bewegungssensor -> Bosch Server",
-#         hops=[
-#             Hop("hue_motion", "Bosch Smart Home Controller", "ZigBee", speed_multiplier=1.3, ttl_ms=17000),
-#             Hop("Bosch Smart Home Controller", "PoE-Switch", "Ethernet", speed_multiplier=1.0),
-#             Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
-#             Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
-#             Hop("5850", "bosch_server", "Ethernet", speed_multiplier=1.0),
-#         ],
-#         steps=[
-#             StatusStep("bosch.bewegungssensor.status"),
-#             StatusStep("bosch.bewegungssensor.alarm"),
-#         ],
-#         packet_frequency_ms=9000,
-#     ),
-#         RouteRuntime(
-#         route_id=11,
-#         name="Bosch Innenkamera -> Bosch Server",
-#         hops=[
-#             Hop("638", "Bosch Smart Home Controller", "ZigBee", speed_multiplier=1.0, ttl_ms=15000),
-#             Hop("Bosch Smart Home Controller", "PoE-Switch", "Ethernet", speed_multiplier=1.0),
-#             Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
-#             Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
-#             Hop("5850", "bosch_server", "Ethernet", speed_multiplier=1.0),
-#         ],
-#         steps=[
-#             StatusStep("bosch.innenkamera.status"),
-#             StatusStep("bosch.innenkamera.alarm"),
-#         ],
-#         packet_frequency_ms=9000,
-#     ),
-#         RouteRuntime(
-#         route_id=12,
-#         name="Bosch Server ->Bosch Funksteckdose ",
-#         hops=[
-#             Hop("bosch_server","5850", "Ethernet", speed_multiplier=1.16, ttl_ms=15000),
-#             Hop("5850","pfSense" , "Ethernet", speed_multiplier=1.0),
-#             Hop("pfSense","PoE-Switch" , "Ethernet", speed_multiplier=1.0),
-#             Hop("PoE-Switch","Bosch Smart Home Controller" , "Ethernet", speed_multiplier=1.0),
-#             Hop("Bosch Smart Home Controller","638" , "ZigBee", speed_multiplier=1.0),
-#         ],
-#         steps=[
-#             StatusStep("bosch.bosch_server.status"),
-#             StatusStep("bosch.bosch_server.alarm"),
-#         ],
-#         packet_frequency_ms=9000,
-#     ),
-#         RouteRuntime(
-#         route_id=13,
-#         name="Bosch Server ->Bosch Türschloss",
-#         hops=[
-#             Hop("bosch_server","5850", "Ethernet", speed_multiplier=1.16, ttl_ms=15000),
-#             Hop("5850","pfSense" , "Ethernet", speed_multiplier=1.0),
-#             Hop("pfSense","PoE-Switch" , "Ethernet", speed_multiplier=1.0),
-#             Hop("PoE-Switch","Bosch Smart Home Controller" , "Ethernet", speed_multiplier=1.0),
-#             Hop("Bosch Smart Home Controller","496" , "ZigBee", speed_multiplier=1.0),
-#         ],
-#         steps=[
-#             StatusStep("bosch.bosch_server.status"),
-#             StatusStep("bosch.bosch_server.alarm"),
-#         ],
-#         packet_frequency_ms=9000,
-#     ),
-#         RouteRuntime(
-#         route_id=14,
-#         name="Bosch Server ->Bosch Feuermelder",
-#         hops=[
-#             Hop("bosch_server","5850", "Ethernet", speed_multiplier=1.3, ttl_ms=15000),
-#             Hop("5850","pfSense" , "Ethernet", speed_multiplier=1.0),
-#             Hop("pfSense","PoE-Switch" , "Ethernet", speed_multiplier=1.0),
-#             Hop("PoE-Switch","Bosch Smart Home Controller" , "Ethernet", speed_multiplier=1.0),
-#             Hop("Bosch Smart Home Controller","493", "ZigBee", speed_multiplier=1.0),
-#         ],
-#         steps=[
-#             StatusStep("bosch.bosch_server.status"),
-#             StatusStep("bosch.bosch_server.alarm"),
-#         ],
-#         packet_frequency_ms=9000,
-#     ),
-#         RouteRuntime(
-#         route_id=15,
-#         name="Bosch Server ->Bosch Türschloss",
-#         hops=[
-#             Hop("bosch_server","5850", "Ethernet", speed_multiplier=1.25, ttl_ms=15000),
-#             Hop("5850","pfSense" , "Ethernet", speed_multiplier=1.0),
-#             Hop("pfSense","PoE-Switch" , "Ethernet", speed_multiplier=1.0),
-#             Hop("PoE-Switch","Bosch Smart Home Controller" , "Ethernet", speed_multiplier=1.0),
-#             Hop("Bosch Smart Home Controller","638", "ZigBee", speed_multiplier=1.0),
-#         ],
-#         steps=[
-#             StatusStep("bosch.bosch_server.status"),
-#             StatusStep("bosch.bosch_server.alarm"),
-#         ],
-#         packet_frequency_ms=9000,
-#     ),
-#         RouteRuntime(
-#         route_id=16,
-#         name="Philips Hue Bewegungssensor -> Philips Server",
-#         hops=[
-#             Hop("hue_motion","hue_bridge", "ZigBee", speed_multiplier=1.0, ttl_ms=15000),
-#             Hop("hue_bridge","poe_switch" , "Ethernet", speed_multiplier=1.0),
-#             Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
-#             Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
-#             Hop("5850", "phillips_server", "Ethernet", speed_multiplier=1.0),
-#         ],
-#         steps=[
-#             StatusStep("bosch.bewegungssensor.status"),
-#             StatusStep("bosch.bewegungssensor.alarm"),
-#         ],
-#         packet_frequency_ms=9000,
-#     ),
-#         RouteRuntime(
-#         route_id=17,
-#         name="Philips Hue Schreibtischlampe -> Philips Server",
-#         hops=[
-#             Hop("hue_lamp","hue_bridge", "ZigBee", speed_multiplier=1.16, ttl_ms=15000),
-#             Hop("hue_bridge","poe_switch" , "Ethernet", speed_multiplier=1.0),
-#             Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
-#             Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
-#             Hop("5850", "phillips_server", "Ethernet", speed_multiplier=1.0),
-#         ],
-#         steps=[
-#             StatusStep("bosch.hue_lamp.status"),
-#             StatusStep("bosch.hue_lamp.alarm"),
-#         ],
-#         packet_frequency_ms=9000,
-#     ),
-#         RouteRuntime(
-#         route_id=18,
-#         name="Phillips Server -> Phillips Schreibtischlampe",
-#         hops=[
-#             Hop("phillips_server", "5850", "Ethernet", speed_multiplier=1.3, ttl_ms=15000),
-#             Hop("5850", "pfSense", "Ethernet", speed_multiplier=1.0),
-#             Hop("pfSense", "PoE-Switch", "Ethernet", speed_multiplier=1.0),
-#             Hop("poe_switch", "hue_bridge", "Ethernet", speed_multiplier=1.0),
-#             Hop("hue_bridge", "hue_motion", "ZigBee", speed_multiplier=1.0),
-#         ],
-#         steps=[
-#             StatusStep("bosch.phillips_server.status"),
-#             StatusStep("bosch.phillips_server.alarm"),
-#         ],
-#         packet_frequency_ms=9000,
-#     ),
-#         RouteRuntime(
-#         route_id=19,
-#         name="Homematic Bewegungssensor -> Homematic Server",
-#         hops=[
-#             Hop("homematic_motion","homematic_controller", "ZigBee", speed_multiplier=1.0, ttl_ms=15000),
-#             Hop("homematic_controller","poe_switch" , "Ethernet", speed_multiplier=1.0),
-#             Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
-#             Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
-#             Hop("5850", "139", "Ethernet", speed_multiplier=1.0),
-#         ],
-#         steps=[
-#             StatusStep("bosch.homematic_motion.status"),
-#             StatusStep("bosch.homematic_motion.alarm"),
-#         ],
-#         packet_frequency_ms=9000,
-#     ),
-#         RouteRuntime(
-#         route_id=20,
-#         name="Homematic Rauchmelder -> Homematic Server",
-#         hops=[
-#             Hop("homematic_smoke", "homematic_controller", "ZigBee", speed_multiplier=1.16, ttl_ms=15000),
-#             Hop("homematic_controller", "poe_switch", "Ethernet", speed_multiplier=1.0),
-#             Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
-#             Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
-#             Hop("5850", "139", "Ethernet", speed_multiplier=1.0),
-#         ],
-#         steps=[
-#             StatusStep("bosch.homematic_smoke.status"),
-#             StatusStep("bosch.homematic_smoke.alarm"),
-#         ],
-#         packet_frequency_ms=9000,
-#     ),
-#         RouteRuntime(
-#         route_id=21,
-#         name="Homematic Funksteckdose -> Homematic Server",
-#         hops=[
-#             Hop("698", "homematic_controller", "ZigBee", speed_multiplier=1.16, ttl_ms=15000),
-#             Hop("homematic_controller", "poe_switch", "Ethernet", speed_multiplier=1.0),
-#             Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
-#             Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
-#             Hop("5850", "139", "Ethernet", speed_multiplier=1.0),
-#         ],
-#         steps=[
-#             StatusStep("bosch.homematic_funksteckdose.status"),
-#             StatusStep("bosch.homematic_funksteckdose.alarm"),
-#         ],
-#         packet_frequency_ms=9000,
-#     ),
-#         RouteRuntime(
-#         route_id=22,
-#         name="Hama Kamera -> Amazon Server",
-#         hops=[
-#             Hop("hama_camera", "wifi_hub", "WLAN", speed_multiplier=1.16, ttl_ms=15000),
-#             Hop("wifi_hub", "fritzbox", "Ethernet", speed_multiplier=1.0),
-#             Hop("fritzbox", "PoE-Switch", "Ethernet", speed_multiplier=1.0),
-#             Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
-#             Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
-#             Hop("5850", "amazon_server", "Ethernet", speed_multiplier=1.0),
-#         ],
-#         steps=[
-#             StatusStep("bosch.hama_camera.status"),
-#             StatusStep("bosch.hama_camera.alarm"),
-#         ],
-#         packet_frequency_ms=9000,
-#     ),
-#         RouteRuntime(
-#         route_id=23,
-#         name="Jura 8 Kaffeemaschine -> Amazon Server",
-#         hops=[
-#             Hop("jura_coffee_machine", "wifi_hub", "WLAN", speed_multiplier=0.84, ttl_ms=15000),
-#             Hop("wifi_hub", "fritzbox", "Ethernet", speed_multiplier=1.0),
-#             Hop("fritzbox", "PoE-Switch", "Ethernet", speed_multiplier=1.0),
-#             Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
-#             Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
-#             Hop("5850", "amazon_server", "Ethernet", speed_multiplier=1.0),
-#         ],
-#         steps=[
-#             StatusStep("bosch.jura_8_kaffeemaschine.status"),
-#             StatusStep("bosch.jura_8_kaffeemaschine.alarm"),
-#         ],
-#         packet_frequency_ms=9000,
-#     ),
-#         RouteRuntime(
-#         route_id=24,
-#         name="Roborock 8 Staubsauger -> Amazon Server",
-#         hops=[
-#             Hop("roborock_vacuum", "wifi_hub", "WLAN", speed_multiplier=0.9, ttl_ms=15000),
-#             Hop("wifi_hub", "fritzbox", "Ethernet", speed_multiplier=1.0),
-#             Hop("fritzbox", "PoE-Switch", "Ethernet", speed_multiplier=1.0),
-#             Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
-#             Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
-#             Hop("5850", "amazon_server", "Ethernet", speed_multiplier=1.0),
-#         ],
-#         steps=[
-#             StatusStep("bosch.roborock_vacuum.status"),
-#             StatusStep("bosch.roborock_vacuum.alarm"),
-#         ],
-#         packet_frequency_ms=9000,
-#     ),
-#         RouteRuntime(
-#         route_id=25,
-#         name="Thermomix M6 -> Vorwerk Server",
-#         hops=[
-#             Hop("thermomix_m6", "wifi_hub", "WLAN", speed_multiplier=1.0, ttl_ms=15000),
-#             Hop("wifi_hub", "fritzbox", "Ethernet", speed_multiplier=1.0),
-#             Hop("fritzbox", "PoE-Switch", "Ethernet", speed_multiplier=1.0),
-#             Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
-#             Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
-#             Hop("5850", "vorwerk_server", "Ethernet", speed_multiplier=1.0),
-#         ],
-#         steps=[
-#             StatusStep("bosch.thermomix_m6.status"),
-#             StatusStep("bosch.thermomix_m6.alarm"),
-#         ],
-#         packet_frequency_ms=9000,
-#     ),
-#         RouteRuntime(
-#         route_id=26,
-#         name="TP-Link Funksteckdose -> Amazon Server",
-#         hops=[
-#             Hop("tplink_socket", "wifi_hub", "WLAN", speed_multiplier=1.16, ttl_ms=15000),
-#             Hop("wifi_hub", "fritzbox", "Ethernet", speed_multiplier=1.0),
-#             Hop("fritzbox", "PoE-Switch", "Ethernet", speed_multiplier=1.0),
-#             Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
-#             Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
-#             Hop("5850", "amazon_server", "Ethernet", speed_multiplier=1.0),
-#         ],
-#         steps=[
-#             StatusStep("bosch.tplink_socket.status"),
-#             StatusStep("bosch.tplink_socket.alarm"),
-#         ],
-#         packet_frequency_ms=9000,
-#     ),
-#         RouteRuntime(
-#         route_id=27,
-#         name="Witings Körperwaage -> Google Server",
-#         hops=[
-#             Hop("withings_scale", "wifi_hub", "WLAN", speed_multiplier=1.3, ttl_ms=15000),
-#             Hop("wifi_hub", "fritzbox", "Ethernet", speed_multiplier=1.0),
-#             Hop("fritzbox", "PoE-Switch", "Ethernet", speed_multiplier=1.0),
-#             Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
-#             Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
-#             Hop("5850", "google_server", "Ethernet", speed_multiplier=1.0),
-#         ],
-#         steps=[
-#             StatusStep("bosch.withings_scale.status"),
-#             StatusStep("bosch.withings_scale.alarm"),
-#         ],
-#         packet_frequency_ms=9000,
-#     ),
-#         RouteRuntime(
-#         route_id=28,
-#         name="Witings Körperwaage -> Google Server",
-#         hops=[
-#             Hop("firetv_stick", "wifi_hub", "WLAN", speed_multiplier=1.25, ttl_ms=15000),
-#             Hop("wifi_hub", "fritzbox", "Ethernet", speed_multiplier=1.0),
-#             Hop("fritzbox", "PoE-Switch", "Ethernet", speed_multiplier=1.0),
-#             Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
-#             Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
-#             Hop("5850", "amazon_server", "Ethernet", speed_multiplier=1.0),
-#         ],
-#         steps=[
-#             StatusStep("bosch.firetv_stick.status"),
-#             StatusStep("bosch.firetv_stick.alarm"),
-#         ],
-#         packet_frequency_ms=9000,
-#     ),
-#         RouteRuntime(
-#         route_id=29,
-#         name="Witings Körperwaage -> Google Server",
-#         hops=[
-#             Hop("chromecast", "wifi_hub", "WLAN", speed_multiplier=1.3, ttl_ms=15000),
-#             Hop("wifi_hub", "fritzbox", "Ethernet", speed_multiplier=1.0),
-#             Hop("fritzbox", "PoE-Switch", "Ethernet", speed_multiplier=1.0),
-#             Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
-#             Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
-#             Hop("5850", "google_server", "Ethernet", speed_multiplier=1.0),
-#         ],
-#         steps=[
-#             StatusStep("bosch.chromecast.status"),
-#             StatusStep("bosch.chromecast.alarm"),
-#         ],
-#         packet_frequency_ms=9000,
-#     ),
-#         RouteRuntime(
-#         route_id=30,
-#         name="Witings Körperwaage -> Google Server",
-#         hops=[
-#             Hop("smart_display", "wifi_hub", "WLAN", speed_multiplier=1.25, ttl_ms=15000),
-#             Hop("wifi_hub", "fritzbox", "Ethernet", speed_multiplier=1.0),
-#             Hop("fritzbox", "PoE-Switch", "Ethernet", speed_multiplier=1.0),
-#             Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
-#             Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
-#             Hop("5850", "amazon_server", "Ethernet", speed_multiplier=1.0),
-#         ],
-#         steps=[
-#             StatusStep("bosch.smart_display.status"),
-#             StatusStep("bosch.smart_display.alarm"),
-#         ],
-#         packet_frequency_ms=9000,
-#     ),
-#     RouteRuntime(
-#         route_id=31,
-#         name="Witings Körperwaage -> Google Server",
-#         hops=[
-#             Hop("levoit_air_purifier", "wifi_hub", "WLAN", speed_multiplier=1.25, ttl_ms=15000),
-#             Hop("wifi_hub", "fritzbox", "Ethernet", speed_multiplier=1.0),
-#             Hop("fritzbox", "PoE-Switch", "Ethernet", speed_multiplier=1.0),
-#             Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
-#             Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
-#             Hop("5850", "amazon_server", "Ethernet", speed_multiplier=1.0),
-#         ],
-#         steps=[
-#             StatusStep("bosch.levoit_air_purifier.status"),
-#             StatusStep("bosch.levoit_air_purifier.alarm"),
-#         ],
-#         packet_frequency_ms=9000,
-#     ),
-#     RouteRuntime(
-#         route_id=32,
-#         name="Witings Körperwaage -> Google Server",
-#         hops=[
-#             Hop("ring_camera", "wifi_hub", "WLAN", speed_multiplier=1.25, ttl_ms=15000),
-#             Hop("wifi_hub", "fritzbox", "Ethernet", speed_multiplier=1.0),
-#             Hop("fritzbox", "PoE-Switch", "Ethernet", speed_multiplier=1.0),
-#             Hop("PoE-Switch", "pfSense", "Ethernet", speed_multiplier=1.0),
-#             Hop("pfSense", "5850", "Ethernet", speed_multiplier=1.0),
-#             Hop("5850", "amazon_server", "Ethernet", speed_multiplier=1.0),
-#         ],
-#         steps=[
-#             StatusStep("bosch.ring_camera.status"),
-#             StatusStep("bosch.ring_camera.alarm"),
-#         ],
-#         packet_frequency_ms=9000,
-#     ),
-# ]
 
 
 #Block markieren

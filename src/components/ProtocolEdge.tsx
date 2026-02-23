@@ -19,8 +19,13 @@ type PacketStyle = CSSProperties & {
 const PACKET_ICON_PX = 34;
 const TICK_MS = 100;
 const MAX_FLIGHTS_VISIBLE = 12;
-
 const EDGE_HOVER_STROKE_PX = 22;
+
+const PAUSE_EVENT = 'smartdash:pause';
+
+function getGlobalPaused() {
+  return Boolean((window as any).__smartdashPaused);
+}
 
 function payloadToLines(payload: unknown): string[] {
   if (payload === null || payload === undefined) return ['keine Daten'];
@@ -48,24 +53,20 @@ function payloadToLines(payload: unknown): string[] {
   return ['keine Daten'];
 }
 
+const pausedFlightsByEdgeId = new Map<string, FlightEvent[]>();
+const pausedNowByEdgeId = new Map<string, number>();
+
 const ProtocolEdge: React.FC<EdgeProps> = (props) => {
   const { id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, style, data, selected } = props;
+  const edgeKey = String(id);
 
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const t = window.setInterval(() => setNow(Date.now()), TICK_MS);
-    return () => window.clearInterval(t);
-  }, []);
-
-  const expiresAtByPacketId = useTopologyStore((s) => s.expiresAtByPacketId);
-
-  const routeStatusById = useTopologyStore((s) => s.routeStatusById);
-  const routeNameById = useTopologyStore((s) => s.routeNameById);
-
+  const expiresAtByPacketId = useTopologyStore((s) => (s as any).expiresAtByPacketId);
+  const routeStatusById = useTopologyStore((s) => (s as any).routeStatusById);
+  const routeNameById = useTopologyStore((s) => (s as any).routeNameById);
 
   const d = (data ?? {}) as ProtocolEdgeData;
   const protocol = d.protocol;
-  const flights = Array.isArray(d.flights) ? d.flights : [];
+  const flightsLive = Array.isArray(d.flights) ? d.flights : [];
 
   const baseColor = protocol ? (PROTOCOL_META[protocol]?.color ?? '#4b5563') : '#4b5563';
 
@@ -81,19 +82,82 @@ const ProtocolEdge: React.FC<EdgeProps> = (props) => {
   const safePath = useMemo(() => edgePath.replaceAll("'", "\\'"), [edgePath]);
   const label = (protocol && PROTOCOL_META[protocol]?.label) ?? protocol ?? '';
 
-  const activeFlights = useMemo(() => {
-    return flights.filter((f) => {
-      const ttlEndAt =
-        f.packetId && expiresAtByPacketId[f.packetId] ? expiresAtByPacketId[f.packetId] : f.expiresAt;
+  const [isPaused, setIsPaused] = useState(() => getGlobalPaused());
+  const [now, setNow] = useState(() => Date.now());
 
+  const computeActiveFlights = (list: FlightEvent[], nowMs: number, ignoreTtl: boolean) => {
+    return list.filter((f) => {
       const hopEndAt = f.startedAt + Math.max(10, Math.round(f.durationMs));
+
+      if (ignoreTtl) {
+        return nowMs >= f.startedAt && nowMs < hopEndAt;
+      }
+
+      const ttlEndAt =
+        (f as any).packetId && expiresAtByPacketId?.[(f as any).packetId]
+          ? expiresAtByPacketId[(f as any).packetId]
+          : (f as any).expiresAt;
+
       const endAt = Math.min(hopEndAt, ttlEndAt);
-
-      return now >= f.startedAt && now < endAt;
+      return nowMs >= f.startedAt && nowMs < endAt;
     });
-  }, [flights, expiresAtByPacketId, now]);
+  };
 
-  const visibleFlights = activeFlights.slice(-MAX_FLIGHTS_VISIBLE);
+  const activeFlights = useMemo(() => {
+    return computeActiveFlights(flightsLive, now, false);
+  }, [flightsLive, now, expiresAtByPacketId]);
+
+  const visibleFlightsLive = useMemo(() => activeFlights.slice(-MAX_FLIGHTS_VISIBLE), [activeFlights]);
+
+  const visibleFlightsLiveRef = useRef<FlightEvent[]>(visibleFlightsLive);
+  useEffect(() => {
+    visibleFlightsLiveRef.current = visibleFlightsLive;
+  }, [visibleFlightsLive]);
+
+  useEffect(() => {
+    const onPause = (e: Event) => {
+      const paused = Boolean((e as CustomEvent).detail?.paused);
+
+      if (paused) {
+        const t = Date.now();
+        pausedNowByEdgeId.set(edgeKey, t);
+
+        // nur aktuell aktive Flights behalten
+        pausedFlightsByEdgeId.set(edgeKey, visibleFlightsLiveRef.current);
+
+        setIsPaused(true);
+        setNow(t);
+        return;
+      }
+
+      pausedNowByEdgeId.delete(edgeKey);
+      pausedFlightsByEdgeId.delete(edgeKey);
+
+      setIsPaused(false);
+      setNow(Date.now());
+    };
+
+    window.addEventListener(PAUSE_EVENT, onPause as any);
+    return () => window.removeEventListener(PAUSE_EVENT, onPause as any);
+  }, [edgeKey]);
+
+  useEffect(() => {
+    if (isPaused) return;
+
+    // Interval nur dann, wenn es wirklich etwas zu animieren gibt
+    if (flightsLive.length === 0) return;
+
+    const t = window.setInterval(() => setNow(Date.now()), TICK_MS);
+    return () => window.clearInterval(t);
+  }, [isPaused, flightsLive.length]);
+
+  const pausedNow = pausedNowByEdgeId.get(edgeKey);
+  const snapshotFlights = pausedFlightsByEdgeId.get(edgeKey);
+
+  const visibleFlights = isPaused && snapshotFlights && typeof pausedNow === 'number'
+    ? snapshotFlights
+    : visibleFlightsLive;
+
   const hasPacket = visibleFlights.length > 0;
 
   const edgeStyle: CSSProperties = {
@@ -103,22 +167,27 @@ const ProtocolEdge: React.FC<EdgeProps> = (props) => {
     strokeDasharray: hasPacket ? '6 4' : undefined,
   };
 
+  const playState = isPaused ? ('paused' as const) : ('running' as const);
+
   const [edgeHover, setEdgeHover] = useState(false);
   const [popoverHover, setPopoverHover] = useState(false);
+
   useEffect(() => {
-  if (!edgeHover) setPopoverHover(false);
+    if (!edgeHover) setPopoverHover(false);
   }, [edgeHover]);
 
   useEffect(() => {
-    if (activeFlights.length === 0) setPopoverHover(false);
-  }, [activeFlights.length]);
+    if (visibleFlights.length === 0) setPopoverHover(false);
+  }, [visibleFlights.length]);
 
   const closeTimer = useRef<number | null>(null);
 
-    const routesOnEdge = useMemo(() => {
+  const routesOnEdge = useMemo(() => {
+    if (!(edgeHover || popoverHover)) return [];
+
     const map = new Map<number, { routeId: number; routeName: string; status: string; count: number }>();
 
-    for (const f of activeFlights) {
+    for (const f of visibleFlights) {
       const p = (f as any)?.payload;
       if (!p || typeof p !== 'object') continue;
 
@@ -126,8 +195,8 @@ const ProtocolEdge: React.FC<EdgeProps> = (props) => {
       const rid = typeof ridRaw === 'number' ? ridRaw : Number(ridRaw);
       if (!Number.isFinite(rid) || rid <= 0) continue;
 
-      const routeName = String(routeNameById[rid] ?? (p as any).routeName ?? `Route ${rid}`);
-      const status = String(routeStatusById[rid] ?? (p as any).status ?? '');
+      const routeName = String(routeNameById?.[rid] ?? (p as any).routeName ?? `Route ${rid}`);
+      const status = String(routeStatusById?.[rid] ?? (p as any).status ?? '');
 
       const existing = map.get(rid);
       if (existing) existing.count += 1;
@@ -135,7 +204,7 @@ const ProtocolEdge: React.FC<EdgeProps> = (props) => {
     }
 
     return Array.from(map.values()).sort((a, b) => a.routeId - b.routeId);
-  }, [activeFlights, routeNameById, routeStatusById]);
+  }, [edgeHover, popoverHover, visibleFlights, routeNameById, routeStatusById]);
 
   const showPopover = (edgeHover || popoverHover) && routesOnEdge.length > 0;
 
@@ -147,19 +216,13 @@ const ProtocolEdge: React.FC<EdgeProps> = (props) => {
 
   const closeEdgeHoverDelayed = () => {
     if (closeTimer.current) window.clearTimeout(closeTimer.current);
-    closeTimer.current = window.setTimeout(() => {
-      setEdgeHover(false);
-    }, 120);
+    closeTimer.current = window.setTimeout(() => setEdgeHover(false), 120);
   };
 
   return (
     <>
       <style>
         {`
-          @keyframes packet-move {
-            from { offset-distance: 0%; }
-            to   { offset-distance: 100%; }
-          }
           @keyframes sd-dash {
             to { stroke-dashoffset: -24; }
           }
@@ -167,16 +230,16 @@ const ProtocolEdge: React.FC<EdgeProps> = (props) => {
       </style>
 
       <BaseEdge
-        id={String(id)}
+        id={edgeKey}
         path={edgePath}
         style={{
           ...edgeStyle,
           animation: hasPacket ? 'sd-dash 0.35s linear infinite' : undefined,
+          animationPlayState: playState,
         }}
         markerEnd={undefined}
       />
 
-      {/* Hover-Hitfläche für die Kante */}
       <path
         d={edgePath}
         fill="none"
@@ -204,14 +267,17 @@ const ProtocolEdge: React.FC<EdgeProps> = (props) => {
 
         {visibleFlights.map((f) => {
           const duration = Math.max(10, Math.round(f.durationMs));
-          const elapsed = Math.max(0, now - f.startedAt);
-          const HOLD_AT_END_MS = 140; 
-          if (elapsed >= duration + HOLD_AT_END_MS) return null;
-          let t = elapsed / duration;
-          t = Math.min(1, Math.max(0, t));
-          if (t < 0) t = 0;
 
-          // Richtung berücksichtigen
+          const renderNow = isPaused && typeof pausedNow === 'number' ? pausedNow : now;
+
+          // Pause: TTL ignorieren
+          const endAt = f.startedAt + duration;
+          if (renderNow >= endAt) return null;
+
+          const elapsed = Math.max(0, renderNow - f.startedAt);
+
+          let t = elapsed / duration;
+          t = Math.min(0.999, Math.max(0, t));
           if (f.direction === 'backward') t = 1 - t;
 
           const packetStyle: PacketStyle = {
@@ -222,15 +288,16 @@ const ProtocolEdge: React.FC<EdgeProps> = (props) => {
             offsetPath: `path('${safePath}')`,
             offsetDistance: `${t * 100}%`,
             offsetRotate: '0deg',
-
             filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.55))',
           };
 
+          const payloadLines = payloadToLines((f as any)?.payload);
+
           return (
             <div
-              key={f.id}
+              key={String(f.id)}
               style={packetStyle}
-              title={`${f.sourceDeviceId} → ${f.targetDeviceId}${f.packetId ? ` (${f.packetId})` : ''}`}
+              title={`${f.sourceDeviceId} → ${f.targetDeviceId}${(f as any).packetId ? ` (${(f as any).packetId})` : ''}\n${payloadLines.join('\n')}`}
             >
               <div style={{ position: 'relative', width: PACKET_ICON_PX, height: PACKET_ICON_PX }}>
                 <svg width={PACKET_ICON_PX} height={PACKET_ICON_PX} viewBox="0 0 24 24" aria-hidden>
@@ -242,7 +309,6 @@ const ProtocolEdge: React.FC<EdgeProps> = (props) => {
                   />
                   <path d="M5 8l7 5 7-5" fill="none" stroke="#111827" strokeWidth="1.2" strokeLinejoin="round" />
                 </svg>
-
               </div>
             </div>
           );
