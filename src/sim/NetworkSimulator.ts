@@ -1,4 +1,4 @@
-import { useTopologyStore } from '../model/useTopologyStore';
+import { useTopologyStore, type PacketLike } from '../model/useTopologyStore';
 import type { Protocol } from '../model/schema';
 import { PROTOCOL_META } from '../model/protocols';
 
@@ -10,10 +10,11 @@ export type HopPacketMessage = {
   targetDeviceId: string;
   packetRateMs?: number;
   protocol: unknown;
-  ttlMs?: number; 
-  packetId?: string; 
+  ttlMs?: number;
+  packetId?: string;
   messageType?: string;
   payload?: Record<string, unknown>;
+  speedMultiplier?: number;
 };
 
 type LogMessage = { type: 'log'; level?: WsLogLevel; text?: string; message?: string };
@@ -24,64 +25,155 @@ function isObject(v: unknown): v is UnknownObject {
   return typeof v === 'object' && v !== null;
 }
 
+const PROTOCOL_SET = new Set(Object.keys(PROTOCOL_META));
+
 function toProtocol(value: unknown): Protocol | null {
   if (typeof value !== 'string') return null;
-  if (Object.prototype.hasOwnProperty.call(PROTOCOL_META, value)) return value as Protocol;
+  if (PROTOCOL_SET.has(value)) return value as Protocol;
   return null;
+}
+
+function isPausedNow() {
+  return typeof window !== 'undefined' && Boolean((window as any).__smartdashPaused);
+}
+
+function getOrCreateGlobalMap<T>(key: string): Map<string, T> {
+  const w = window as any;
+  if (!w[key]) w[key] = new Map<string, T>();
+  return w[key] as Map<string, T>;
+}
+
+export type VisualFlight = {
+  id: string;
+  edgeKey: string;
+  startedAt: number;
+  durationMs: number;
+  direction: 'forward' | 'backward';
+  packetId?: string;
+  payload?: Record<string, unknown>;
+  sourceDeviceId: string;
+  targetDeviceId: string;
+  protocol: Protocol;
+};
+
+const GLOBAL_FLIGHTS_KEY = '__smartdashFlightsByKey';
+
+const MAX_FLIGHTS_PER_EDGE = 6;
+const SWEEP_EVERY_MS = 1200;
+let sweepTimer: number | null = null;
+
+function scheduleSweep() {
+  if (sweepTimer) return;
+  sweepTimer = window.setTimeout(() => {
+    sweepTimer = null;
+    sweepOldFlights();
+  }, SWEEP_EVERY_MS);
+}
+
+function sweepOldFlights() {
+  if (typeof window === 'undefined') return;
+  const now = Date.now();
+  const m = getOrCreateGlobalMap<VisualFlight[]>(GLOBAL_FLIGHTS_KEY);
+
+  for (const [k, arr] of m.entries()) {
+    const kept = arr.filter((f) => now < f.startedAt + f.durationMs + 250);
+    if (kept.length === 0) m.delete(k);
+    else if (kept.length !== arr.length) m.set(k, kept);
+  }
 }
 
 export function logToUi(text: string, level: WsLogLevel = 'info') {
   const clean = String(text ?? '').trim();
   if (!clean) return;
-  useTopologyStore.getState().addLog(clean, level);
+
+  const st: any = useTopologyStore.getState?.();
+  const addLog = st?.addLog;
+
+  if (typeof addLog === 'function') {
+    if (addLog.length >= 2) addLog(clean, level);
+    else addLog(clean);
+  }
 }
 
-function ingestHopPacket(hop: HopPacketMessage) {
+function pushVisualFlight(hop: HopPacketMessage) {
   const proto = toProtocol(hop.protocol);
-  if (!proto) {
-    logToUi(`Packet verworfen: unbekanntes protocol "${String(hop.protocol)}"`, 'error');
-    return;
-  }
+  if (!proto) return;
 
-  useTopologyStore.getState().ingestPacket({
-    timestamp: hop.timestamp,
+  const src = String(hop.sourceDeviceId ?? '').trim();
+  const dst = String(hop.targetDeviceId ?? '').trim();
+  if (!src || !dst) return;
+
+  const edgeKey = `${src}__${dst}__${proto}`;
+
+  const baseRate = typeof hop.packetRateMs === 'number' ? hop.packetRateMs : 1600;
+  const speed = typeof hop.speedMultiplier === 'number' ? hop.speedMultiplier : 1.0;
+
+  const baseDuration = Math.max(80, Math.round(baseRate * speed * 0.5));
+
+  const st: any = useTopologyStore.getState?.();
+  const speedPct = typeof st?.packetSpeedPercent === 'number' ? st.packetSpeedPercent : 100;
+  const speedFactor = Math.max(0.1, Math.min(5, speedPct / 100)); // 10..500% => 0.1..5.0
+
+  const durationMs = Math.max(80, Math.round(baseDuration / speedFactor));
+
+  const id = String(hop.packetId ?? `${Date.now()}-${Math.random().toString(16).slice(2)}`);
+
+  const flight: VisualFlight = {
+    id,
+    edgeKey,
+    startedAt: Date.now(),
+    durationMs,
+    direction: 'forward',
+    packetId: hop.packetId,
+    payload: hop.payload ?? {},
+    sourceDeviceId: src,
+    targetDeviceId: dst,
+    protocol: proto,
+  };
+
+  const m = getOrCreateGlobalMap<VisualFlight[]>(GLOBAL_FLIGHTS_KEY);
+  const arr = m.get(edgeKey) ?? [];
+  arr.push(flight);
+
+  const trimmed = arr.length > MAX_FLIGHTS_PER_EDGE ? arr.slice(-MAX_FLIGHTS_PER_EDGE) : arr;
+  m.set(edgeKey, trimmed);
+
+  scheduleSweep();
+}
+
+function pushStoreFlight(hop: HopPacketMessage) {
+  const proto = toProtocol(hop.protocol);
+  if (!proto) return;
+
+  const st: any = useTopologyStore.getState?.();
+  if (typeof st?.ingestPacket !== 'function') return;
+
+  const p: PacketLike = {
     sourceDeviceId: String(hop.sourceDeviceId ?? '').trim(),
     targetDeviceId: String(hop.targetDeviceId ?? '').trim(),
     protocol: proto,
-    packetRateMs: hop.packetRateMs,
-    ttlMs: hop.ttlMs,
-    packetId: hop.packetId,
-    messageType: hop.messageType ?? 'hop',
-    payload: hop.payload ?? {},
-  });
-}
+    packetRateMs: typeof hop.packetRateMs === 'number' ? hop.packetRateMs : undefined,
+    ttlMs: typeof hop.ttlMs === 'number' ? hop.ttlMs : undefined,
+    packetId: typeof hop.packetId === 'string' ? hop.packetId : undefined,
+    payload: hop.payload ?? undefined,
+    timestamp: hop.timestamp,
+  };
 
-function isPausedNow() {
-  return Boolean((window as any).__smartdashPaused);
+  st.ingestPacket(p);
 }
 
 let packetQueue: HopPacketMessage[] = [];
 let queueHead = 0;
 let flushScheduled = false;
 
-const MAX_QUEUE = 2000;
-const MAX_INGEST_PER_FRAME = 250;
+const MAX_QUEUE = 4000;
+const MAX_VISUALS_PER_FRAME = 600;
 
-let droppedWhilePaused = 0;
+let droppedPaused = 0;
 let droppedOverflow = 0;
 
 function pendingCount() {
   return packetQueue.length - queueHead;
-}
-
-function clearQueue(reason: 'paused' | 'flush') {
-  const pending = pendingCount();
-  if (pending <= 0) return;
-
-  if (reason === 'paused') droppedWhilePaused += pending;
-
-  packetQueue = [];
-  queueHead = 0;
 }
 
 function scheduleFlush() {
@@ -94,16 +186,17 @@ function flushPackets() {
   flushScheduled = false;
 
   if (isPausedNow()) {
-    clearQueue('paused');
-    if (droppedWhilePaused > 0 && droppedWhilePaused % 500 === 0) {
-      logToUi(`Pause aktiv: ${droppedWhilePaused} Packets verworfen.`, 'warn');
-    }
+    droppedPaused += pendingCount();
+    packetQueue = [];
+    queueHead = 0;
     return;
   }
 
   let processed = 0;
-  while (queueHead < packetQueue.length && processed < MAX_INGEST_PER_FRAME) {
-    ingestHopPacket(packetQueue[queueHead]);
+  while (queueHead < packetQueue.length && processed < MAX_VISUALS_PER_FRAME) {
+    const hop = packetQueue[queueHead];
+    pushVisualFlight(hop);
+    pushStoreFlight(hop);
     queueHead += 1;
     processed += 1;
   }
@@ -111,7 +204,7 @@ function flushPackets() {
   if (queueHead >= packetQueue.length) {
     packetQueue = [];
     queueHead = 0;
-  } else if (queueHead > 1000) {
+  } else if (queueHead > 1200) {
     packetQueue = packetQueue.slice(queueHead);
     queueHead = 0;
   }
@@ -121,18 +214,12 @@ function flushPackets() {
 
 function enqueueHopPacket(hop: HopPacketMessage) {
   if (isPausedNow()) {
-    droppedWhilePaused += 1;
-    if (droppedWhilePaused % 500 === 0) {
-      logToUi(`Pause aktiv: ${droppedWhilePaused} Packets verworfen.`, 'warn');
-    }
+    droppedPaused += 1;
     return;
   }
 
   if (pendingCount() >= MAX_QUEUE) {
     droppedOverflow += 1;
-    if (droppedOverflow % 500 === 0) {
-      logToUi(`Queue voll: ${droppedOverflow} Packets verworfen.`, 'warn');
-    }
     return;
   }
 
@@ -140,12 +227,17 @@ function enqueueHopPacket(hop: HopPacketMessage) {
   scheduleFlush();
 }
 
+let lastWireAt = 0;
 function parseIncoming(raw: string): unknown[] {
   try {
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed : [parsed];
   } catch {
-    logToUi(raw, 'wire');
+    const t = Date.now();
+    if (t - lastWireAt > 1200) {
+      lastWireAt = t;
+      logToUi(String(raw ?? ''), 'wire');
+    }
     return [];
   }
 }
@@ -170,12 +262,14 @@ function flushRouteStatus() {
   const patch = routeStatusBuf;
   routeStatusBuf = {};
 
-  useTopologyStore.setState((s: any) => ({
-    routeStatusById: {
-      ...(s.routeStatusById ?? {}),
-      ...patch,
-    },
-  }));
+  if (typeof (useTopologyStore as any).setState === 'function') {
+    (useTopologyStore as any).setState((s: any) => ({
+      routeStatusById: {
+        ...(s.routeStatusById ?? {}),
+        ...patch,
+      },
+    }));
+  }
 }
 
 function enqueueRouteStatus(routeId: number, status: string) {
@@ -184,6 +278,8 @@ function enqueueRouteStatus(routeId: number, status: string) {
   routeStatusScheduled = true;
   requestAnimationFrame(flushRouteStatus);
 }
+
+let lastUnknownAt = 0;
 
 export function handleSmartdashMessage(raw: string) {
   const items = parseIncoming(raw);
@@ -202,6 +298,15 @@ export function handleSmartdashMessage(raw: string) {
       continue;
     }
 
+    if (type === 'config') {
+      const ms = (item.updateRateMs ?? item['update_rate_ms']) as unknown;
+      if (typeof ms === 'number') {
+        const st: any = useTopologyStore.getState?.();
+        if (typeof st?.setUpdateRateMs === 'function') st.setUpdateRateMs(ms);
+      }
+      continue;
+    }
+
     if (type === 'packet') {
       const env = item as Partial<PacketEnvelope> & UnknownObject;
       const hop = (isObject(env.packet) ? env.packet : env) as HopPacketMessage;
@@ -212,13 +317,14 @@ export function handleSmartdashMessage(raw: string) {
     if (type === 'routeStatus') {
       const routeId = Number((item as any).routeId);
       const status = String((item as any).status ?? '');
-
-      if (Number.isFinite(routeId) && routeId > 0) {
-        enqueueRouteStatus(routeId, status);
-      }
+      if (Number.isFinite(routeId) && routeId > 0) enqueueRouteStatus(routeId, status);
       continue;
     }
 
-    logToUi(`Unbekannter Nachrichtentyp (keys: ${Object.keys(item).join(', ')})`, 'warn');
+    const t = Date.now();
+    if (t - lastUnknownAt > 1500) {
+      lastUnknownAt = t;
+      logToUi(`Unbekannter Nachrichtentyp (keys: ${Object.keys(item).join(', ')})`, 'warn');
+    }
   }
 }

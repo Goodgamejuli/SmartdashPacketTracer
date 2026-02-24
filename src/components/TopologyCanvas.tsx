@@ -24,6 +24,7 @@ import { type Device, useTopologyStore } from '../model/useTopologyStore';
 
 import SmartDeviceNode from '../components/SmartDeviceNode';
 import ProtocolEdge from './ProtocolEdge';
+import PacketCanvasLayer from './PacketCanvasLayer';
 
 const nodeTypes = { smartDevice: SmartDeviceNode };
 const edgeTypes = { protocol: ProtocolEdge };
@@ -88,6 +89,94 @@ const TopologyCanvasContent: React.FC = () => {
   const removeEdgeFromStore = useTopologyStore((s) => s.removeEdge);
   const updateDevicePosition = useTopologyStore((s) => s.updateDevicePosition);
   const addLog = useTopologyStore((s) => s.addLog);
+
+  //Hover UI für Kanten
+  const [hoverEdgeId, setHoverEdgeId] = useState<string | null>(null);
+  const [hoverPos, setHoverPos] = useState<{ x: number; y: number } | null>(null);
+  const routeNameById = useTopologyStore((s: any) => s.routeNameById ?? {});
+  const routeStatusById = useTopologyStore((s: any) => s.routeStatusById ?? {});
+  // aktive Flights filtern
+  const updateRateMs = useTopologyStore((s: any) => (typeof s.updateRateMs === 'number' ? s.updateRateMs : 120));
+  const [now, setNow] = useState(() => Date.now());
+
+  type HoverRouteRow = {
+  key: string;
+  routeId?: number;
+  routeName?: string;
+  routeStatus?: string;
+  label: string;     // Anzeige: routeName oder src→dst
+  count: number;     // wie viele aktive Pakete dieser Route auf der Kante
+};
+
+const hoveredRoutes = useMemo<HoverRouteRow[]>(() => {
+  if (!hoverEdgeId) return [];
+
+  const flights: any[] = Array.isArray(flightsByEdgeId?.[hoverEdgeId]) ? flightsByEdgeId[hoverEdgeId] : [];
+  const map = new Map<string, HoverRouteRow>();
+
+  for (const f of flights) {
+    const startedAt = typeof f?.startedAt === 'number' ? f.startedAt : 0;
+    const durationMs = Math.max(10, Math.round(Number(f?.durationMs ?? 0)));
+    const hopEndAt = startedAt + durationMs;
+
+    const expiresAt = typeof f?.expiresAt === 'number' ? f.expiresAt : hopEndAt;
+    const endAt = Math.min(hopEndAt, expiresAt);
+
+    if (!(now >= startedAt && now < endAt)) continue;
+
+    const srcId = String(f?.sourceDeviceId ?? '');
+    const dstId = String(f?.targetDeviceId ?? '');
+
+    const srcLabel = devices.find((d) => d.id === srcId)?.label ?? srcId;
+    const dstLabel = devices.find((d) => d.id === dstId)?.label ?? dstId;
+
+    const payload = f?.payload && typeof f.payload === 'object' ? f.payload : {};
+    const ridRaw = (payload as any)?.routeId;
+    const routeId = Number.isFinite(Number(ridRaw)) ? Number(ridRaw) : undefined;
+
+    const routeName =
+      typeof (payload as any)?.routeName === 'string'
+        ? String((payload as any).routeName)
+        : undefined;
+
+    const routeStatus =
+      typeof (payload as any)?.status === 'string'
+        ? String((payload as any).status)
+        : undefined;
+
+    const key =
+      routeId !== undefined
+        ? `rid:${routeId}`
+        : routeName
+          ? `rname:${routeName}`
+          : `hop:${srcLabel}→${dstLabel}`;
+
+    const label = routeName ?? `${srcLabel} → ${dstLabel}`;
+
+    const prev = map.get(key);
+    if (prev) {
+      prev.count += 1;
+      if (!prev.routeStatus && routeStatus) prev.routeStatus = routeStatus;
+      continue;
+    }
+
+    map.set(key, {
+      key,
+      routeId,
+      routeName,
+      routeStatus,
+      label,
+      count: 1,
+    });
+  }
+
+  return Array.from(map.values()).sort((a, b) => a.label.localeCompare(b.label));
+}, [hoverEdgeId, flightsByEdgeId, now, devices]);
+
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), Math.max(16, updateRateMs));
+    return () => window.clearInterval(id);
+  }, [updateRateMs]);
 
   const [nodes, setNodes, onNodesChangeBase] = useNodesState<FlowNode>([]);
   const [edges, setEdges, onEdgesChangeBase] = useEdgesState<FlowEdge>([]);
@@ -418,23 +507,16 @@ const TopologyCanvasContent: React.FC = () => {
     setEdges(
       edgesInStore.map<FlowEdge>((edge: any) => ({
         id: edge.id,
+        type: 'protocol',
         source: edge.source,
         target: edge.target,
-
-        sourceHandle: edge.sourceHandle ?? undefined,
-        targetHandle: edge.targetHandle ?? undefined,
-
-        type: 'protocol',
-
-        style: {
-          stroke: PROTOCOL_META[edge.protocol as keyof typeof PROTOCOL_META]?.color ?? '#4b5563',
-          strokeWidth: 2,
-        },
-
+        sourceHandle: edge.sourceHandle ?? null,
+        targetHandle: edge.targetHandle ?? null,
         data: {
           protocol: edge.protocol,
-          flights: flightsByEdgeId?.[edge.id] ?? [],
+          visualKey: `${edge.source}__${edge.target}__${edge.protocol}`,
         },
+        markerEnd: undefined,
       }))
     );
   }, [edgesInStore, flightsByEdgeId, setEdges]);
@@ -721,12 +803,68 @@ const TopologyCanvasContent: React.FC = () => {
         proOptions={{ hideAttribution: true }}
         noPanClassName="nopan"
         noDragClassName="nodrag"
+        onEdgeMouseEnter={(_e, edge) => {
+          setHoverEdgeId(edge.id);
+        }}
+        onEdgeMouseMove={(e) => {
+          const rect = wrapperRef.current?.getBoundingClientRect();
+          if (!rect) return;
+          setHoverPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+        }}
+        onEdgeMouseLeave={() => {
+          setHoverEdgeId(null);
+          setHoverPos(null);
+        }}
+        
       >
-        <MiniMap className="!bg-white/70" />
-        <Controls position="top-right" />
-        <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
-      </ReactFlow>
+        {hoverEdgeId && hoverPos && (
+          <div
+            style={{
+              position: 'absolute',
+              left: Math.min(hoverPos.x + 12, (wrapperRef.current?.clientWidth ?? 0) - 320),
+              top: Math.min(hoverPos.y + 12, (wrapperRef.current?.clientHeight ?? 0) - 220),
+              width: 300,
+              maxHeight: 200,
+              overflow: 'auto',
+              zIndex: 30,
+              background: 'rgba(255,255,255,0.96)',
+              border: '1px solid rgba(148,163,184,0.9)',
+              borderRadius: 10,
+              boxShadow: '0 10px 25px rgba(0,0,0,0.12)',
+              padding: 10,
+              pointerEvents: 'none', 
+            }}
+          >
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#0f172a', marginBottom: 6 }}>
+              Pakete auf dieser Kante
+            </div>
 
+           {hoveredRoutes.length === 0 ? (
+              <div style={{ fontSize: 12, color: '#64748b' }}>Keine aktiven Routen.</div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {hoveredRoutes.slice(0, 50).map((r) => (
+                  <div key={r.key} style={{ fontSize: 12, color: '#0f172a' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                      <div style={{ fontWeight: 700 }}>{r.label}</div>
+                      <div style={{ fontSize: 11, color: '#475569', fontWeight: 700 }}>×{r.count}</div>
+                    </div>
+
+                    {r.routeStatus && (
+                      <div style={{ fontSize: 11, color: '#475569' }}>{r.routeStatus}</div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+        <PacketCanvasLayer />
+        <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
+        <MiniMap className="!bg-white/70" />
+        <Controls position="top-right" />        
+      </ReactFlow>
+      
       {/* Kontextmenü */}
       {contextMenu && (
         <div

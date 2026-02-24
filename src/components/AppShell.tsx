@@ -5,6 +5,7 @@ import DevicePalette from '../components/DevicePalette';
 import RollingLog from '../components/RollingLog';
 import TutorialOverlay from '../components/TutorialOverlay';
 import { handleSmartdashMessage, logToUi } from '../sim/NetworkSimulator';
+import { useTopologyStore } from '../model/useTopologyStore';
 
 const PAUSE_EVENT = 'smartdash:pause';
 
@@ -55,6 +56,8 @@ function filterNonPacketMessagesDuringPause(raw: string) {
 const AppShell: React.FC = () => {
   const [showTutorial, setShowTutorial] = useState(false);
   const [isPaused, setIsPaused] = useState(() => getGlobalPaused());
+  const packetSpeedPercent = useTopologyStore((s) => s.packetSpeedPercent);
+  const setPacketSpeedPercent = useTopologyStore((s) => s.setPacketSpeedPercent);
 
   const isPausedRef = useRef(isPaused);
   useEffect(() => {
@@ -210,6 +213,23 @@ const AppShell: React.FC = () => {
         <TopBar onShowTutorial={() => setShowTutorial(true)} />
 
         <div className="absolute right-14 top-17.5 z-20 flex items-center gap-2">
+          <div className="flex items-center gap-1 rounded bg-white/80 px-2 py-1 shadow">
+            <span className="text-[11px] font-medium text-gray-700">Speed</span>
+            <input
+              aria-label="Packet speed"
+              type="range"
+              min={10}
+              max={200}
+              step={5}
+              value={packetSpeedPercent}
+              onChange={(e) => setPacketSpeedPercent(Number(e.target.value))}
+              className="h-2 w-24"
+              title="100% = normal, 200% = schneller, 50% = langsamer"
+            />
+            <span className="w-10 text-right text-[11px] tabular-nums text-gray-700">
+              {packetSpeedPercent}%
+            </span>
+          </div>
           <button
             type="button"
             onClick={togglePause}

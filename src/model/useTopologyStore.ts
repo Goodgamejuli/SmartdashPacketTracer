@@ -159,7 +159,7 @@ const pickPacketEndpoints = (p: PacketLike) => {
   return { source, target };
 };
 
-type State = {
+type State = {  
   devices: Device[];
   edges: Edge[];
   logs: LogEntry[];
@@ -169,6 +169,7 @@ type State = {
   expiresAtByPacketId: Record<string, number>;
   updateRateMs: number;
   packetTravelMs: number;
+  packetSpeedPercent: number;
 
   addDevice: (d: Omit<Device, 'id'>) => Device;
   removeDevice: (id: string) => void;
@@ -193,6 +194,7 @@ type State = {
 
   setUpdateRateMs: (ms: number) => void;
   setPacketTravelMs: (ms: number) => void;
+  setPacketSpeedPercent: (pct: number) => void;
 
   startFlight: (args: {
     edgeId: string;
@@ -222,6 +224,7 @@ export const useTopologyStore = create<State>((set, get) => ({
 
   updateRateMs: 120,
   packetTravelMs: 140,
+  packetSpeedPercent: 100,
   isPaused: false,
   pauseEpoch: 0,
 
@@ -353,6 +356,8 @@ export const useTopologyStore = create<State>((set, get) => ({
 
   setUpdateRateMs: (ms) => set({ updateRateMs: Math.max(10, Math.round(ms)) }),
   setPacketTravelMs: (ms) => set({ packetTravelMs: Math.max(10, Math.round(ms)) }),
+  setPacketSpeedPercent: (pct) =>
+  set({ packetSpeedPercent: Math.max(10, Math.min(500, Math.round(pct))) }),
 
   startFlight: ({ edgeId, sourceDeviceId, targetDeviceId, direction, durationMs, ttlMs, packetId, startedAt, payload }) => {
     const now = Date.now();
@@ -360,7 +365,10 @@ export const useTopologyStore = create<State>((set, get) => ({
     const pid = normalizePacketId(packetId);
     const devs = get().devices;
     const baseMs = durationMs ?? get().packetTravelMs;
-    const d = scaledDurationMs(devs, sourceDeviceId, targetDeviceId, baseMs);
+    const d0 = scaledDurationMs(devs, sourceDeviceId, targetDeviceId, baseMs);
+    const speedPct = Math.max(10, Math.min(500, get().packetSpeedPercent));
+    const speedFactor = Math.max(0.1, speedPct / 100); // 100% = normal, 200% = doppelt so schnell
+    const d = Math.max(10, Math.round(d0 / speedFactor));
 
     if (pid && isDeadPacketId(pid, now)) return;
     let expiresAt: number;
@@ -436,7 +444,7 @@ export const useTopologyStore = create<State>((set, get) => ({
 
     set((s) => {
       const current = s.flightsByEdgeId[edgeId] ?? [];
-      const next = [...current, flight].slice(-200);
+      const next = [...current, flight].slice(-200); // max 200 Pakete/Route
       return { flightsByEdgeId: { ...s.flightsByEdgeId, [edgeId]: next } };
     });
 
@@ -494,7 +502,10 @@ export const useTopologyStore = create<State>((set, get) => ({
 
     const pr = typeof (packet as any).packetRateMs === 'number' ? (packet as any).packetRateMs : undefined;
     const baseForEdge = typeof pr === 'number' ? pr : get().packetTravelMs;
-    const d = scaledDurationMs(devs, srcId, dstId, baseForEdge);
+    const d0 = scaledDurationMs(devs, srcId, dstId, baseForEdge);
+    const speedPct = Math.max(10, Math.min(500, get().packetSpeedPercent));
+    const speedFactor = Math.max(0.1, speedPct / 100);
+    const d = Math.max(10, Math.round(d0 / speedFactor));
 
     let startedAt: number | undefined;
 
