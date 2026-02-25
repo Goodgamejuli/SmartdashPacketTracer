@@ -1,6 +1,11 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { useViewport } from '@xyflow/react';
 
+// Wichtig: Der Canvas-Layer zeichnet aus einem globalen Map.
+// Damit Briefe auf *allen* Kanten auftauchen, muss dieses Map bei Änderungen
+// am Store zuverlässig befüllt werden.
+import { useTopologyStore } from '../model/useTopologyStore';
+
 type VisualFlight = {
   id: string;
   edgeKey: string;
@@ -110,6 +115,43 @@ const PacketCanvasLayer: React.FC = () => {
   useEffect(() => {
     (window as any).__smartdashCanvasPackets = true;
   }, []);
+
+  // ---------------------------------------------------------------------------
+  // Flights aus dem Zustand in das globale Map spiegeln.
+  // Ohne diese Synchronisation bleibt das globale Map leer und der Canvas
+  // zeichnet keine Briefe.
+  const flightsByEdgeId = useTopologyStore((s) => s.flightsByEdgeId);
+  const edges = useTopologyStore((s) => s.edges);
+
+  useEffect(() => {
+    const flightsMap = getFlightsMap();
+    flightsMap.clear();
+
+    const protocolByEdgeId: Record<string, string> = {};
+    for (const e of edges) {
+      protocolByEdgeId[e.id] = (e.protocol as unknown as string) || '';
+    }
+
+    for (const edgeId of Object.keys(flightsByEdgeId)) {
+      const arr = flightsByEdgeId[edgeId];
+      if (!arr || arr.length === 0) continue;
+
+      const vflights: VisualFlight[] = arr.map((f) => ({
+        id: f.id,
+        edgeKey: edgeId,
+        startedAt: f.startedAt,
+        durationMs: f.durationMs,
+        direction: f.direction,
+        packetId: f.packetId,
+        payload: typeof f.payload === 'object' ? (f.payload as Record<string, unknown>) : undefined,
+        sourceDeviceId: f.sourceDeviceId,
+        targetDeviceId: f.targetDeviceId,
+        protocol: protocolByEdgeId[edgeId] ?? '',
+      }));
+
+      flightsMap.set(edgeId, vflights);
+    }
+  }, [flightsByEdgeId, edges]);
 
   useEffect(() => {
     const onPause = (e: Event) => {

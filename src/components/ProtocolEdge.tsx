@@ -62,9 +62,15 @@ const ProtocolEdgeInner: React.FC<EdgeProps> = (props) => {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    // Geometrie unter beiden Keys ablegen:
+    // - Edge-ID (wichtig für Canvas-Layer)
+    // - visualKey (wichtig für Edge-Varianten, die einen stabilen Key nutzen)
     const m = getOrCreateGeomMap();
-    m.set(visualKey, { sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition });
-  }, [visualKey, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition]);
+    const geom = { sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition };
+    const strId = String(id);
+    m.set(strId, geom);
+    if (visualKey !== strId) m.set(visualKey, geom);
+  }, [visualKey, id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition]);
 
   const edgeStyle: CSSProperties = useMemo(() => {
     return {
