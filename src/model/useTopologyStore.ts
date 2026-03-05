@@ -356,8 +356,42 @@ export const useTopologyStore = create<State>((set, get) => ({
 
   setUpdateRateMs: (ms) => set({ updateRateMs: Math.max(10, Math.round(ms)) }),
   setPacketTravelMs: (ms) => set({ packetTravelMs: Math.max(10, Math.round(ms)) }),
-  setPacketSpeedPercent: (pct) =>
-  set({ packetSpeedPercent: Math.max(10, Math.min(500, Math.round(pct))) }),
+ setPacketSpeedPercent: (pct) =>
+  set((s) => {
+    const nextPct = Math.max(10, Math.min(500, Math.round(pct)));
+    const prevPct = Math.max(10, Math.min(500, Math.round(s.packetSpeedPercent ?? 100)));
+
+    if (nextPct === prevPct) {
+      return { packetSpeedPercent: nextPct };
+    }
+
+    const now = Date.now();
+
+    const nextFlightsByEdgeId: Record<string, FlightEvent[]> = {};
+    for (const [edgeId, arr] of Object.entries(s.flightsByEdgeId)) {
+      nextFlightsByEdgeId[edgeId] = (arr ?? []).map((f) => {
+        const oldDur = Math.max(10, Math.round(Number(f.durationMs ?? 0)));
+
+        const rawProgress = (now - f.startedAt) / oldDur;
+        const progress = Math.max(0, Math.min(1, rawProgress));
+
+        const newDur = Math.max(10, Math.round(oldDur * (prevPct / nextPct)));
+
+        const newStartedAt = now - Math.round(progress * newDur);
+
+        return {
+          ...f,
+          startedAt: newStartedAt,
+          durationMs: newDur,
+        };
+      });
+    }
+
+    return {
+      packetSpeedPercent: nextPct,
+      flightsByEdgeId: nextFlightsByEdgeId,
+    };
+  }),
 
   startFlight: ({ edgeId, sourceDeviceId, targetDeviceId, direction, durationMs, ttlMs, packetId, startedAt, payload }) => {
     const now = Date.now();

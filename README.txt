@@ -1,90 +1,84 @@
-# SmartDash Packet Tracer - Setup
+SmartDash Packet Tracer - Setup
 
-Dieses Projekt visualisiert Smart-Home-Netzwerkverkehr als Topologie. 
-Das Frontend empfängt Traffic über WebSocket und rendert die Pakete live.
+Das Frontend + der Paket Simulator lassen sich automatisch via start_windows.bat, auffindbar in diesem Verzeichnis, starten.
 
-Das Frontend + der Paket Simulator lassen sich via start_windows.bat / start_linux.sh starten.
-
-Um das Projekt starten zu können, müssen jedoch zuerst folgende Dependencies installiert werden:
-
-
----------------------------------------------------------------------------------------------------
+Wenn Python fehlt, lädt das Script den Python-Installer herunter und führt ihn aus.
+Danach installiert es die benötigten Python- und Node-Abhängigkeiten und startet beide Teile des Projekts.
+Beim ersten Start dauert es entsprechend länger.
 
 
-# Dependencies installieren
 
-# Voraussetzungen
-- Node.js LTS installieren
-- websockets 16.0
-- Python 3.9+
+#Dabei installiert bzw. startet es automatisch:
 
-Windows install:
-winget install OpenJS.NodeJS.LTS -e --source winget; `
-winget install Python.Python.3.11 -e --source winget; `
-python -m pip install --upgrade pip; `
-python -m pip install websockets==16.0
+-Python 
+
+-Python-Paket websockets 16.0
+
+-Node.js
+
+-npm Dependencies aus package.json (npm install)
 
 
-Unter Ubuntu / Debian Linux: 
-curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash - && \
-sudo apt update && \
-sudo apt install -y nodejs python3 python3-pip && \
-python3 -m pip install --upgrade pip && \
-python3 -m pip install websockets==16.0
+
+#(start_linux.sh wird noch von Bruno & Benedikt konzipiert)
 
 
-# Das Frontend + der Paket Simulator lassen sich nun via start_windows.bat / start_linux.sh starten
+
+#manueller Start ohne .bat
+
+Terminal 1: Python WebSocket-Simulator starten
+cd "<PROJEKTROOT>/src/sim/Localhost"
+py smartdash_transfer_ws.py
+
+Terminal 2: Vite-Frontend starten
+cd "<PROJEKTROOT>"
+npm run dev -- --port 5173 --open
 
 
----------------------------------------------------------------------------------------------------
 
-
-Ordnerstruktur
-
+#Ordnerstruktur
 
 src/
 
 ├── components/
 
-│   ├── AppShell.tsx
+│ ├── AppShell.tsx
 
-│   ├── TopologyCanvas.tsx
+│ ├── TopologyCanvas.tsx
 
-│   ├── SmartDeviceNode.tsx
+│ ├── SmartDeviceNode.tsx
 
-│   ├── ProtocolEdge.tsx
+│ ├── ProtocolEdge.tsx
 
-│   ├── DevicePalette.tsx
+│ ├── DevicePalette.tsx
 
-│   ├── TopBar.tsx
+│ ├── PacketCanvasLayer
 
-│   ├── RollingLog.tsx
+│ ├── TopBar.tsx
 
-│   └── TutorialOverlay.tsx
+│ ├── RollingLog.tsx
+
+│ └── TutorialOverlay.tsx
 
 ├── model/
 
-│   ├── deviceTypes.ts
+│ ├── deviceTypes.ts
 
-│   ├── protocols.ts
+│ ├── protocols.ts
 
-│   ├── schema.ts
+│ ├── schema.ts
 
-│   └── useTopologyStore.ts
+│ └── useTopologyStore.ts
 
 ├── sim/
 
-│   ├── NetworkSimulator.ts
+│ ├── NetworkSimulator.ts
 
-│   └── Host Webserver/
+│ ├── Localhost/
 
-│       ├── smartdash\_transfer\_ws.py
+│ ├── smartdash_transfer_ws.py
 
-│       ├── requirements.txt
-
-│       ├── start\_smartdash\_console.sh
-
-│       └── Anleitung.docx
+│ └── start_smartdash_console.sh
 
 ├── App.tsx
 
@@ -93,51 +87,7 @@ src/
 └── index.css
 
 
----------------------------------------------------------------------------------------------------
+Hinweis:
 
-
-Aufsetzen nicht Git-inkludierter Abhängigkeiten - fällt weg wenn Projekt als ganzes übergeben wird
---> start der Start.bat im Projektverzeichnis genügt (öffnet zwei Terminals)
-
-# Start in zwei Terminals
-
-# Terminal 1: WebSocket-Simulator
-```bash
-
-cd "src/sim/Localhost"
-
-python -m venv .venv
-
-\# Windows:
-
-.\\.venv\\Scripts\\activate
-
-\# Linux/macOS:
-
-\# source .venv/bin/activate
-
-
-
-pip install -r requirements.txt
-
-python smartdash\_transfer\_ws.py
-
-
-
-
-
-\# Terminal 2: Frontend
-
-
-
-Im Projektroot (dort liegt package.json)
-
-
-
-npm install
-
-npm run dev -- --port 5173 --open
-
-
-
-
+Um die Smarthome-Topologie zu öffnen, im UI oben rechts den "Laden"-Button betätigen & in den Projekt-Sourcefolder navigieren.
+Folglich kann im Ordner "saves" die Topologie zum Öffnen gewählt werden.

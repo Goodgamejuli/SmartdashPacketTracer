@@ -1,9 +1,7 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useViewport } from '@xyflow/react';
 
-// Wichtig: Der Canvas-Layer zeichnet aus einem globalen Map.
-// Damit Briefe auf *allen* Kanten auftauchen, muss dieses Map bei Änderungen
-// am Store zuverlässig befüllt werden.
+
 import { useTopologyStore } from '../model/useTopologyStore';
 
 type VisualFlight = {
@@ -108,6 +106,8 @@ const PacketCanvasLayer: React.FC = () => {
 
   const { x: vx, y: vy, zoom } = useViewport();
 
+  const [isPausedUi, setIsPausedUi] = useState(() => isPausedNow());
+
   const pausedAtRef = useRef<number | null>(null);
   const frozenNowRef = useRef<number>(Date.now());
   const rafRef = useRef<number | null>(null);
@@ -116,14 +116,16 @@ const PacketCanvasLayer: React.FC = () => {
     (window as any).__smartdashCanvasPackets = true;
   }, []);
 
-  // ---------------------------------------------------------------------------
-  // Flights aus dem Zustand in das globale Map spiegeln.
-  // Ohne diese Synchronisation bleibt das globale Map leer und der Canvas
-  // zeichnet keine Briefe.
   const flightsByEdgeId = useTopologyStore((s) => s.flightsByEdgeId);
   const edges = useTopologyStore((s) => s.edges);
+  const simSpeed = useTopologyStore((s: any) => {
+    const v = s.simSpeed ?? s.timeScale ?? s.playbackSpeed ?? 1;
+    return typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : 1;
+  });
 
   useEffect(() => {
+    if (isPausedUi) return; // <-- neu: sichtbare Pakete einfrieren
+
     const flightsMap = getFlightsMap();
     flightsMap.clear();
 
@@ -151,11 +153,14 @@ const PacketCanvasLayer: React.FC = () => {
 
       flightsMap.set(edgeId, vflights);
     }
-  }, [flightsByEdgeId, edges]);
+  }, [flightsByEdgeId, edges, isPausedUi]);
 
   useEffect(() => {
     const onPause = (e: Event) => {
       const paused = Boolean((e as CustomEvent).detail?.paused);
+
+      setIsPausedUi(paused); // <-- neu
+
       if (paused) {
         pausedAtRef.current = Date.now();
         frozenNowRef.current = pausedAtRef.current;
@@ -219,7 +224,8 @@ const PacketCanvasLayer: React.FC = () => {
 
       for (let i = flights.length - 1; i >= 0; i -= 1) {
         const f = flights[i];
-        const dur = Math.max(80, Math.round(f.durationMs));
+        const baseDur = Math.max(80, Math.round(f.durationMs));
+        const dur = Math.max(1, baseDur / simSpeed); // aktuelle Geschwindigkeit wirkt auch auf alte Pakete
         const endAt = f.startedAt + dur;
 
         if (now < f.startedAt) continue;
@@ -258,8 +264,7 @@ const PacketCanvasLayer: React.FC = () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [vx, vy, zoom]);
+  }, [vx, vy, zoom, simSpeed]);
 
   return (
     <div ref={wrapRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 50 }}>

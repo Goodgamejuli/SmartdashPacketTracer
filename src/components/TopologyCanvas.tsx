@@ -29,6 +29,12 @@ import PacketCanvasLayer from './PacketCanvasLayer';
 const nodeTypes = { smartDevice: SmartDeviceNode };
 const edgeTypes = { protocol: ProtocolEdge };
 
+const PAUSE_EVENT = 'smartdash:pause';
+
+function getGlobalPaused() {
+  return Boolean((window as any).__smartdashPaused);
+}
+
 // Drop-Zentrierung: grobe Node-Größe
 const NODE_W = 180;
 const NODE_H = 84;
@@ -93,36 +99,85 @@ const TopologyCanvasContent: React.FC = () => {
   //Hover UI für Kanten
   const [hoverEdgeId, setHoverEdgeId] = useState<string | null>(null);
   const [hoverPos, setHoverPos] = useState<{ x: number; y: number } | null>(null);
-  const routeNameById = useTopologyStore((s: any) => s.routeNameById ?? {});
-  const routeStatusById = useTopologyStore((s: any) => s.routeStatusById ?? {});
+  const hoverCloseTimerRef = useRef<number | null>(null);
+  const edgeHoverRef = useRef(false);
+  const hoverCardHoverRef = useRef(false);
+
   // aktive Flights filtern
   const updateRateMs = useTopologyStore((s: any) => (typeof s.updateRateMs === 'number' ? s.updateRateMs : 120));
+  const packetSpeedPercent = useTopologyStore((s: any) => {
+    const v = s.packetSpeedPercent;
+    return typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : 100;
+  });
+
+  const packetSpeedFactor = Math.max(0.1, packetSpeedPercent / 100);
   const [now, setNow] = useState(() => Date.now());
+
+  const [isPausedUi, setIsPausedUi] = useState(() => getGlobalPaused());
+  const [pausedHoverNow, setPausedHoverNow] = useState<number | null>(null);
+
+  // Snapshot für Hoverfenster (damit Inhalte in Pause stehen bleiben)
+  const [hoverFlightsByEdgeIdView, setHoverFlightsByEdgeIdView] = useState(flightsByEdgeId);
+  
 
   type HoverRouteRow = {
   key: string;
   routeId?: number;
   routeName?: string;
   routeStatus?: string;
-  label: string;     // Anzeige: routeName oder src→dst
+  label: string;     // Anzeige: routeName / src->dst
   count: number;     // wie viele aktive Pakete dieser Route auf der Kante
 };
 
+const clearHoverCloseTimer = useCallback(() => {
+  if (hoverCloseTimerRef.current !== null) {
+    window.clearTimeout(hoverCloseTimerRef.current);
+    hoverCloseTimerRef.current = null;
+  }
+}, []);
+
+const closeHoverIfIdle = useCallback(() => {
+  if (edgeHoverRef.current) return;
+  if (hoverCardHoverRef.current) return;
+  setHoverEdgeId(null);
+  setHoverPos(null);
+}, []);
+
+const scheduleHoverClose = useCallback(
+  (delayMs: number = 400) => {
+    clearHoverCloseTimer();
+    hoverCloseTimerRef.current = window.setTimeout(() => {
+      hoverCloseTimerRef.current = null;
+      closeHoverIfIdle();
+    }, delayMs);
+  },
+  [clearHoverCloseTimer, closeHoverIfIdle]
+);
+
+useEffect(() => {
+  return () => clearHoverCloseTimer();
+}, [clearHoverCloseTimer]);
+
+const hoverNow = isPausedUi && pausedHoverNow !== null ? pausedHoverNow : now;
 const hoveredRoutes = useMemo<HoverRouteRow[]>(() => {
   if (!hoverEdgeId) return [];
 
-  const flights: any[] = Array.isArray(flightsByEdgeId?.[hoverEdgeId]) ? flightsByEdgeId[hoverEdgeId] : [];
+  const flights: any[] = Array.isArray(hoverFlightsByEdgeIdView?.[hoverEdgeId])
+  ? hoverFlightsByEdgeIdView[hoverEdgeId]
+  : [];
   const map = new Map<string, HoverRouteRow>();
 
   for (const f of flights) {
     const startedAt = typeof f?.startedAt === 'number' ? f.startedAt : 0;
-    const durationMs = Math.max(10, Math.round(Number(f?.durationMs ?? 0)));
-    const hopEndAt = startedAt + durationMs;
+    const storedDurationMs = Math.max(10, Math.round(Number(f?.durationMs ?? 0)));
+    const effectiveDurationMs = Math.max(1, Math.round(storedDurationMs * (100 / packetSpeedPercent)));
+
+    const hopEndAt = startedAt + effectiveDurationMs;
 
     const expiresAt = typeof f?.expiresAt === 'number' ? f.expiresAt : hopEndAt;
     const endAt = Math.min(hopEndAt, expiresAt);
 
-    if (!(now >= startedAt && now < endAt)) continue;
+    if (!(hoverNow >= startedAt && hoverNow < endAt)) continue;
 
     const srcId = String(f?.sourceDeviceId ?? '');
     const dstId = String(f?.targetDeviceId ?? '');
@@ -171,12 +226,14 @@ const hoveredRoutes = useMemo<HoverRouteRow[]>(() => {
   }
 
   return Array.from(map.values()).sort((a, b) => a.label.localeCompare(b.label));
-}, [hoverEdgeId, flightsByEdgeId, now, devices]);
+}, [hoverEdgeId, hoverFlightsByEdgeIdView, hoverNow, devices, packetSpeedPercent]);
 
   useEffect(() => {
+    if (isPausedUi) return; // Hover-Zeitbasis einfrieren
+
     const id = window.setInterval(() => setNow(Date.now()), Math.max(16, updateRateMs));
     return () => window.clearInterval(id);
-  }, [updateRateMs]);
+  }, [updateRateMs, isPausedUi]);
 
   const [nodes, setNodes, onNodesChangeBase] = useNodesState<FlowNode>([]);
   const [edges, setEdges, onEdgesChangeBase] = useEdgesState<FlowEdge>([]);
@@ -774,6 +831,30 @@ const hoveredRoutes = useMemo<HoverRouteRow[]>(() => {
     setNodes,
   ]);
 
+  useEffect(() => {
+    const onPause = (e: Event) => {
+      const paused = Boolean((e as CustomEvent).detail?.paused);
+      setIsPausedUi(paused);
+
+      if (paused) {
+        setPausedHoverNow(Date.now());
+        setHoverFlightsByEdgeIdView(useTopologyStore.getState().flightsByEdgeId);
+      } else {
+        setPausedHoverNow(null);
+        setHoverFlightsByEdgeIdView(useTopologyStore.getState().flightsByEdgeId);
+        setNow(Date.now()); // sofort aktualisieren nach Resume
+      }
+    };
+
+    window.addEventListener(PAUSE_EVENT, onPause as any);
+    return () => window.removeEventListener(PAUSE_EVENT, onPause as any);
+  }, []);
+
+  useEffect(() => {
+    if (isPausedUi) return; // Freeze
+    setHoverFlightsByEdgeIdView(flightsByEdgeId);
+  }, [flightsByEdgeId, isPausedUi]);
+
   const canConfirmProtocol = useMemo(() => {
     if (!protocolPicker) return false;
     const opt = protocolPicker.options.find((o) => o.protocol === protocolPicker.selected);
@@ -783,7 +864,15 @@ const hoveredRoutes = useMemo<HoverRouteRow[]>(() => {
   }, [protocolPicker]);
 
   return (
-    <div ref={wrapperRef} className="reactflow-wrapper relative h-full w-full bg-slate-100">
+    <div
+  ref={wrapperRef}
+  className="reactflow-wrapper relative h-full w-full bg-slate-100"
+  onMouseLeave={() => {
+    edgeHoverRef.current = false;
+    hoverCardHoverRef.current = false;
+    scheduleHoverClose(500);
+  }}
+    >
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -799,71 +888,91 @@ const hoveredRoutes = useMemo<HoverRouteRow[]>(() => {
         onPaneClick={() => globalThis.dispatchEvent(new CustomEvent('sd:close-edge-inspector'))}
         onInit={setRf}
         nodeTypes={nodeTypes}
-        edgeTypes={edgeTypes}        
+        edgeTypes={edgeTypes}
         proOptions={{ hideAttribution: true }}
         noPanClassName="nopan"
         noDragClassName="nodrag"
-        onEdgeMouseEnter={(_e, edge) => {
+        onEdgeMouseEnter={(e, edge) => {
+          clearHoverCloseTimer();
+          edgeHoverRef.current = true;
+
+          const isNewEdge = hoverEdgeId !== edge.id;
           setHoverEdgeId(edge.id);
+
+          // Position nur beim ersten Öffnen oder beim Wechsel auf eine andere Kante setzen
+          if (isNewEdge || !hoverPos) {
+            const rect = wrapperRef.current?.getBoundingClientRect();
+            if (rect) {
+              setHoverPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+            }
+          }
         }}
         onEdgeMouseMove={(e) => {
+          if (hoverEdgeId && hoverPos) return; // schon offen -> nicht mehr bewegen
           const rect = wrapperRef.current?.getBoundingClientRect();
           if (!rect) return;
           setHoverPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
         }}
         onEdgeMouseLeave={() => {
-          setHoverEdgeId(null);
-          setHoverPos(null);
+          edgeHoverRef.current = false;
+          scheduleHoverClose(500);
         }}
-        
       >
-        {hoverEdgeId && hoverPos && (
-          <div
-            style={{
-              position: 'absolute',
-              left: Math.min(hoverPos.x + 12, (wrapperRef.current?.clientWidth ?? 0) - 320),
-              top: Math.min(hoverPos.y + 12, (wrapperRef.current?.clientHeight ?? 0) - 220),
-              width: 300,
-              maxHeight: 200,
-              overflow: 'auto',
-              zIndex: 30,
-              background: 'rgba(255,255,255,0.96)',
-              border: '1px solid rgba(148,163,184,0.9)',
-              borderRadius: 10,
-              boxShadow: '0 10px 25px rgba(0,0,0,0.12)',
-              padding: 10,
-              pointerEvents: 'none', 
-            }}
-          >
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#0f172a', marginBottom: 6 }}>
-              Pakete auf dieser Kante
-            </div>
-
-           {hoveredRoutes.length === 0 ? (
-              <div style={{ fontSize: 12, color: '#64748b' }}>Keine aktiven Routen.</div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {hoveredRoutes.slice(0, 50).map((r) => (
-                  <div key={r.key} style={{ fontSize: 12, color: '#0f172a' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                      <div style={{ fontWeight: 700 }}>{r.label}</div>
-                      <div style={{ fontSize: 11, color: '#475569', fontWeight: 700 }}>×{r.count}</div>
-                    </div>
-
-                    {r.routeStatus && (
-                      <div style={{ fontSize: 11, color: '#475569' }}>{r.routeStatus}</div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
         <PacketCanvasLayer />
         <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
         <MiniMap className="!bg-white/70" />
-        <Controls position="top-right" />        
+        <Controls position="top-right" />
       </ReactFlow>
+
+      {hoverEdgeId && hoverPos && (
+        <div
+          className="absolute nopan nodrag"
+          onMouseEnter={() => {
+            hoverCardHoverRef.current = true;
+            clearHoverCloseTimer();
+          }}
+          onMouseLeave={() => {
+            hoverCardHoverRef.current = false;
+            scheduleHoverClose(400);
+          }}
+          onPointerDown={(e) => e.stopPropagation()}
+          style={{
+            position: 'absolute',
+            left: Math.min(hoverPos.x + 12, (wrapperRef.current?.clientWidth ?? 0) - 320),
+            top: Math.min(hoverPos.y + 12, (wrapperRef.current?.clientHeight ?? 0) - 220),
+            width: 300,
+            maxHeight: 200,
+            overflow: 'auto',
+            zIndex: 200, 
+            background: 'rgba(255,255,255,0.96)',
+            border: '1px solid rgba(148,163,184,0.9)',
+            borderRadius: 10,
+            boxShadow: '0 10px 25px rgba(0,0,0,0.12)',
+            padding: 10,
+            pointerEvents: 'auto',
+          }}
+        >
+          <div style={{ fontSize: 12, fontWeight: 700, color: '#0f172a', marginBottom: 6 }}>
+            Pakete auf dieser Kante
+          </div>
+
+          {hoveredRoutes.length === 0 ? (
+            <div style={{ fontSize: 12, color: '#64748b' }}>Keine aktiven Routen.</div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {hoveredRoutes.slice(0, 50).map((r) => (
+                <div key={r.key} style={{ fontSize: 12, color: '#0f172a' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                    <div style={{ fontWeight: 700 }}>{r.label}</div>
+                    <div style={{ fontSize: 11, color: '#475569', fontWeight: 700 }}>×{r.count}</div>
+                  </div>
+                  {r.routeStatus && <div style={{ fontSize: 11, color: '#475569' }}>{r.routeStatus}</div>}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
       
       {/* Kontextmenü */}
       {contextMenu && (
